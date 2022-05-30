@@ -1,0 +1,33 @@
+{
+  "name": "drpc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/**/*.spec.ts"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/sinon": "^10.0.11",
+    "mocha": "^10.0.0",
+    "sinon": "^14.0.0",
+    "ts-node": "^10.8.0",
+    "typescript": "^4.6.4"
+  },
+  "dependencies": {
+    "@ethersproject/logger": "^5.6.0",
+    "@ethersproject/networks": "^5.6.3",
+    "@ethersproject/providers": "^5.6.7",
+    "@ethersproject/web": "^5.6.1",
+    "chai": "^4.3.6",
+    "crypto-js": "^4.1.1",
+    "dproxy": "github:p2p-org/dproxy",
+    "node-fetch": "^3.2.4",
+    "ts-interface-checker": "^1.0.2"
+  }
+}
