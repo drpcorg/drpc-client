@@ -6,9 +6,11 @@ specifiers:
   '@ethersproject/providers': ^5.6.7
   '@ethersproject/web': ^5.6.1
   '@types/chai': ^4.3.1
+  '@types/chai-as-promised': ^7.1.5
   '@types/mocha': ^9.1.1
   '@types/sinon': ^10.0.11
   chai: ^4.3.6
+  chai-as-promised: ^7.1.1
   crypto-js: ^4.1.1
   dproxy: github:p2p-org/dproxy
   mocha: ^10.0.0
@@ -25,14 +27,16 @@ dependencies:
   '@ethersproject/web': 5.6.1
   chai: 4.3.6
   crypto-js: 4.1.1
-  dproxy: github.com/p2p-org/dproxy/27d886fd61fcb89aed8eeab1059361033ae3c8ce
+  dproxy: github.com/p2p-org/dproxy/171636691e772096e776ebad844ffb348ead72f4
   node-fetch: 3.2.4
   ts-interface-checker: 1.0.2
 
 devDependencies:
   '@types/chai': 4.3.1
+  '@types/chai-as-promised': 7.1.5
   '@types/mocha': 9.1.1
   '@types/sinon': 10.0.11
+  chai-as-promised: 7.1.1_chai@4.3.6
   mocha: 10.0.0
   sinon: 14.0.0
   ts-node: 10.8.0_typescript@4.7.2
@@ -297,6 +301,12 @@ packages:
     resolution: {integrity: sha512-eZxlbI8GZscaGS7kkc/trHTT5xgrjH3/1n2JDwusC9iahPKWMRvRjJSAN5mCXviuTGQ/lHnhvv8Q1YTpnfz9gA==}
     dev: true
 
+  /@types/chai-as-promised/7.1.5:
+    resolution: {integrity: sha512-jStwss93SITGBwt/niYrkf2C+/1KTeZCZl1LaeezTlqppAKeoQC7jxyqYuP72sxBGKCIbw7oHgbYssIRzT5FCQ==}
+    dependencies:
+      '@types/chai': 4.3.1
+    dev: true
+
   /@types/chai/4.3.1:
     resolution: {integrity: sha512-/zPMqDkzSZ8t3VtxOa4KPq7uzzW978M9Tvh+j7GHKuo6k6GTLxPJ4J5gE5cjfJ26pnXst0N5Hax8Sr0T2Mi9zQ==}
     dev: true
@@ -365,7 +375,6 @@ packages:
 
   /assertion-error/1.1.0:
     resolution: {integrity: sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==}
-    dev: false
 
   /balanced-match/1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -421,6 +430,15 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
+  /chai-as-promised/7.1.1_chai@4.3.6:
+    resolution: {integrity: sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA==}
+    peerDependencies:
+      chai: '>= 2.1.2 < 5'
+    dependencies:
+      chai: 4.3.6
+      check-error: 1.0.2
+    dev: true
+
   /chai/4.3.6:
     resolution: {integrity: sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==}
     engines: {node: '>=4'}
@@ -432,7 +450,6 @@ packages:
       loupe: 2.3.4
       pathval: 1.1.1
       type-detect: 4.0.8
-    dev: false
 
   /chalk/4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -444,7 +461,6 @@ packages:
 
   /check-error/1.0.2:
     resolution: {integrity: sha512-BrgHpW9NURQgzoNyjfq0Wu6VFO6D7IZEmJNdtgNqpzGG8RuNFHt2jQxWlAs4HMe119chBnv+34syEZtc6IhLtA==}
-    dev: false
 
   /chokidar/3.5.3:
     resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
@@ -520,7 +536,6 @@ packages:
     engines: {node: '>=0.12'}
     dependencies:
       type-detect: 4.0.8
-    dev: false
 
   /diff/4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
@@ -617,7 +632,6 @@ packages:
 
   /get-func-name/2.0.0:
     resolution: {integrity: sha1-6td0q+5y4gQJQzoGY2YCPdaIekE=}
-    dev: false
 
   /glob-parent/5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -753,7 +767,6 @@ packages:
     resolution: {integrity: sha512-OvKfgCC2Ndby6aSTREl5aCCPTNIzlDfQZvZxNUrBrihDhL3xcrYegTblhmEiCrg2kKQz4XsFIaemE5BF4ybSaQ==}
     dependencies:
       get-func-name: 2.0.0
-    dev: false
 
   /make-error/1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
@@ -890,7 +903,6 @@ packages:
 
   /pathval/1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
-    dev: false
 
   /picomatch/2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
@@ -1104,8 +1116,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/p2p-org/dproxy/27d886fd61fcb89aed8eeab1059361033ae3c8ce:
-    resolution: {commit: 27d886fd61fcb89aed8eeab1059361033ae3c8ce, repo: git+ssh://git@github.com/p2p-org/dproxy.git, type: git}
+  github.com/p2p-org/dproxy/171636691e772096e776ebad844ffb348ead72f4:
+    resolution: {commit: 171636691e772096e776ebad844ffb348ead72f4, repo: git+ssh://git@github.com/p2p-org/dproxy.git, type: git}
     name: dproxy
     version: 1.0.0
     dependencies:

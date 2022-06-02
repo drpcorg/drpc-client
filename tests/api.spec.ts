@@ -1,20 +1,30 @@
-import { provider, RpcState, validateResponse } from '../src/api';
-import { expect } from 'chai';
+import {
+  ConsensusError,
+  JSONRpc,
+  makeRequestMulti,
+  provider,
+  RpcState,
+  validateResponse,
+} from '../src/api';
+import { expect, use } from 'chai';
+import chaip from 'chai-as-promised';
+use(chaip);
 import sinon from 'sinon';
 import {
   Response as DrpcResponse,
   Request as DrpcRequest,
   ProviderResponse,
+  JSONRPCResponse,
 } from 'dproxy/ts/protocol';
 
 const default_request = {
   api_key: '',
-  id: 'test',
+  id: '1',
   provider_ids: ['test1', 'test2', 'test3'],
   provider_num: 1,
   rpc: [
     {
-      id: 'rtest1',
+      id: '1',
       jsonrpc: '2.0',
       method: 'eth_test',
       nonce: 1,
@@ -23,19 +33,23 @@ const default_request = {
   ],
 };
 
+const default_rpc_data = {
+  error: '',
+  id: '1',
+  nonce: 0,
+  signature: '',
+  ok: true,
+  payload: 'data1',
+};
+
+function createRpcData(data: Partial<JSONRPCResponse> = {}): JSONRPCResponse {
+  return { ...default_rpc_data, ...data };
+}
+
 const default_provider_response = {
-  id: 'test',
+  id: '1',
   provider_id: 'test1',
-  rpc_data: [
-    {
-      id: 'rtest1',
-      error: '',
-      nonce: 1,
-      ok: true,
-      payload: 'test_result',
-      signature: '',
-    },
-  ],
+  rpc_data: [createRpcData()],
 };
 
 function createProviderRespone(
@@ -45,7 +59,7 @@ function createProviderRespone(
 }
 
 const default_response = {
-  id: 'test',
+  id: '1',
   responses: [
     {
       result: createProviderRespone(),
@@ -78,15 +92,137 @@ const requestResponsePairs: {
 } = {
   'single correct response': [createRequest(), createResponse(), CORRECT],
   'incorrect response id': [
-    createRequest({ id: 'test1' }),
-    createResponse({ id: 'test2' }),
+    createRequest({ id: '1' }),
+    createResponse({ id: '2' }),
     THROWS(Error),
+  ],
+  'not enough succeess for consensus': [
+    createRequest({
+      provider_ids: ['test1', 'test2', 'test3'],
+      provider_num: 3,
+    }),
+    createResponse({
+      responses: [
+        { result: createProviderRespone({ id: 'test1' }) },
+        { error: { code: 0, message: 'test' } },
+        { error: { code: 0, message: 'test' } },
+      ],
+    }),
+    THROWS(ConsensusError),
+  ],
+  'no consensus in response payload': [
+    createRequest({
+      provider_ids: ['test1', 'test2', 'test3'],
+      provider_num: 3,
+    }),
+    createResponse({
+      responses: [
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data3' }),
+            ],
+          }),
+        },
+      ],
+    }),
+    THROWS(ConsensusError),
+  ],
+  'correct consensus from 3 responses': [
+    createRequest({
+      provider_ids: ['test1', 'test2', 'test3'],
+      provider_num: 3,
+    }),
+    createResponse({
+      responses: [
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1', signature: '2' }),
+              createRpcData({ id: 'rtest2', payload: 'data2', signature: '1' }),
+            ],
+          }),
+        },
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+      ],
+    }),
+    CORRECT,
+  ],
+  'correct consensus from 4 responses with 1 error': [
+    createRequest({
+      provider_ids: ['test1', 'test2', 'test3', 'test4'],
+      provider_num: 4,
+    }),
+    createResponse({
+      responses: [
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+        {
+          result: createProviderRespone({
+            rpc_data: [
+              createRpcData({ id: 'rtest1', payload: 'data1' }),
+              createRpcData({ id: 'rtest2', payload: 'data2' }),
+            ],
+          }),
+        },
+        {
+          error: { code: 0, message: 'test' },
+        },
+      ],
+    }),
+    CORRECT,
   ],
 };
 
 describe('Drpc Api', () => {
   afterEach(() => {
-    sinon.reset();
+    sinon.restore();
   });
   describe('fn#provider', () => {
     it('creates rpc state from settings', () => {
@@ -97,7 +233,7 @@ describe('Drpc Api', () => {
           url: 'test',
           provider_ids: ['test'],
         })
-      ).to.eq({
+      ).to.deep.equal({
         api_key: 'test',
         nextId: 0,
         nextNonce: 0,
@@ -115,7 +251,7 @@ describe('Drpc Api', () => {
         const behav = value[2];
         switch (behav.kind) {
           case 'correct':
-            expect(validateResponse(value[0], value[1])).to.eq(
+            expect(validateResponse(value[0], value[1])).to.deep.equal(
               value[1].responses[0].result
             );
             break;
@@ -125,6 +261,47 @@ describe('Drpc Api', () => {
             }).to.throw(behav.error);
             break;
         }
+      });
+    });
+  });
+  describe('fn#makeRequestMulti', () => {
+    Object.entries(requestResponsePairs).forEach(([key, value]) => {
+      it(key, async () => {
+        const req: JSONRpc[] = value[0].rpc.map((el) => ({
+          method: el.method,
+          params: el.params,
+        }));
+        sinon.stub(Math, 'random').returns(0);
+        const state = provider({
+          api_key: '',
+          provider_ids: value[0].provider_ids,
+          url: '',
+          provider_num: value[0].provider_num,
+        });
+
+        state.fetchOpt = function () {
+          return Promise.resolve(function () {
+            return Promise.resolve({
+              json: () => ({ result: value[1] }),
+            });
+          });
+        } as any;
+
+        const behav = value[2];
+        switch (behav.kind) {
+          case 'correct':
+            expect(await makeRequestMulti(req, state)).to.deep.equal(
+              value[1].responses[0].result?.rpc_data?.map((el) => el.payload) ??
+                []
+            );
+            break;
+          case 'throws':
+            await (
+              expect(makeRequestMulti(req, state)).to.be as any
+            ).rejectedWith(behav.error);
+            break;
+        }
+        sinon.restore();
       });
     });
   });

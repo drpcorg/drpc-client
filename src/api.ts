@@ -4,14 +4,15 @@ import type {
   ProviderResponse,
   Request as DrpcRequest,
   Response as DrpcResponse,
+  HTTPResponse,
 } from 'dproxy/ts/protocol';
 import { CheckerT, createCheckers } from 'ts-interface-checker';
 import suite from 'dproxy/ts/protocol-ti.js';
 import { getFetch } from './getfetch';
 import { initNonce } from './utils';
 
-let { Response: DrpcResponseChecker } = createCheckers(suite) as {
-  Response: CheckerT<DrpcResponse>;
+let { HTTPResponse } = createCheckers(suite) as {
+  HTTPResponse: CheckerT<HTTPResponse>;
 };
 
 export type RpcState = {
@@ -60,10 +61,24 @@ export class ConsensusError extends Error {
   }
 }
 
+function prepareResponsesForCheck(resp: ProviderResponse): {
+  [id: string]: any;
+} {
+  let data: {
+    [id: string]: any;
+  } = {};
+  if (resp.rpc_data) {
+    for (let t of resp.rpc_data) {
+      data[t.id] = t.payload;
+    }
+  }
+  return data;
+}
+
 function collectMaxEqual(presps: ProviderResponse[]): ProviderResponse[] {
   let mp: Map<string, ProviderResponse[]> = new Map();
   for (let resp of presps) {
-    const v = JSON.stringify(resp.rpc_data);
+    const v = JSON.stringify(prepareResponsesForCheck(resp));
     const curv = mp.get(v);
     if (curv) {
       mp.set(v, curv.concat([resp]));
@@ -89,7 +104,7 @@ export function validateResponse(
   dresponse: DrpcResponse
 ): ProviderResponse {
   if (dresponse.id !== request.id) {
-    throw new ConsensusError('Response id and request id are not equal', []);
+    throw new Error('Response id and request id are not equal');
   }
 
   let succeed = dresponse.responses
@@ -130,31 +145,34 @@ async function execute(
   });
 
   let dresponse = await response.json();
-  if (!DrpcResponseChecker.test(dresponse)) {
-    DrpcResponseChecker.check(dresponse);
+  if (!HTTPResponse.test(dresponse)) {
+    HTTPResponse.check(dresponse);
     throw new Error('Impossible, statement above always throws');
   }
 
-  return validateResponse(request, dresponse);
+  if (dresponse.error) {
+    throw new Error(dresponse.error.message);
+  }
+  return validateResponse(request, dresponse.result as DrpcResponse);
 }
 
 function nonce(state: RpcState) {
-  return state.nextNonce++;
+  return ++state.nextNonce;
 }
 
 function id(state: RpcState) {
-  return state.nextId++;
+  return ++state.nextId;
 }
 
 function reqid(state: RpcState) {
-  return state.nextReqId++;
+  return ++state.nextReqId;
 }
 
 export async function makeRequestMulti(
   rpcs: JSONRpc[],
   state: RpcState,
   fetchOpt?: typeof getFetch
-): Promise<ProviderResponse> {
+): Promise<JSONRpc[]> {
   let preqs = rpcs.map((rpc) =>
     creteRequestItem(id(state), nonce(state), rpc.method, rpc.params)
   );
@@ -165,7 +183,8 @@ export async function makeRequestMulti(
     rpc: preqs,
     api_key: state.api_key,
   };
-  return execute(request, state.url, state.fetchOpt);
+  let response = await execute(request, state.url, state.fetchOpt);
+  return response.rpc_data?.map((el) => el.payload) ?? [];
 }
 
 export async function makeRequest(rpc: JSONRpc, state: RpcState) {
