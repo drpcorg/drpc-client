@@ -15,7 +15,7 @@ import {
   Request as DrpcRequest,
   ProviderResponse,
   JSONRPCResponse,
-} from 'dproxy/ts/protocol';
+} from 'dproxy/ts/protocol.cjs';
 
 const default_request = {
   api_key: '',
