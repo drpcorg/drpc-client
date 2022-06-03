@@ -5,7 +5,7 @@ import {
   provider,
   RpcState,
   validateResponse,
-} from '../src/api';
+} from '../../src/api';
 import { expect, use } from 'chai';
 import chaip from 'chai-as-promised';
 use(chaip);

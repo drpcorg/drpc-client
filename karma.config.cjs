@@ -1,0 +1,78 @@
+process.env.CHROME_BIN = require('puppeteer').executablePath();
+const webpack = require('webpack');
+module.exports = function (config) {
+  config.set({
+    plugins: [
+      'karma-jasmine',
+      'karma-chrome-launcher',
+      'karma-webpack',
+      'karma-spec-reporter',
+      require('./tests/karma-polly.cjs'),
+    ],
+    basePath: './',
+    frameworks: ['jasmine', 'webpack', 'polly'],
+    files: [
+      { pattern: 'tests/karma-setup.js', watched: false },
+      { pattern: 'tests/integration/*.ts', watched: false },
+    ],
+    reporters: ['spec'],
+    preprocessors: {
+      'tests/integration/*.ts': ['webpack'],
+      'tests/karma-setup.js': ['webpack'],
+    },
+    pollyConfig: {
+      recordings: './tests/__recordings_browser__',
+      port: 3000,
+    },
+    singleRun: true,
+    browsers: ['Chrome_without_security'],
+    karmaTypescriptConfig: {
+      tsconfig: './tsconfig.json',
+    },
+    customLaunchers: {
+      Chrome_without_security: {
+        base: 'ChromeHeadless',
+        flags: ['--disable-web-security', '--disable-site-isolation-trials'],
+      },
+    },
+    webpack: {
+      watch: false,
+      resolve: {
+        fallback: {
+          path: require.resolve('path-browserify'),
+          util: require.resolve('util/'),
+          fs: false,
+          url: require.resolve('url/'),
+          process: require.resolve('process/browser'),
+          module: false,
+        },
+        extensions: ['.ts', '.js', '.cjs'],
+      },
+      plugins: [
+        new webpack.DefinePlugin({
+          __isBrowser__: 'true',
+        }),
+      ],
+      module: {
+        rules: [
+          { test: /graceful-fs/, use: 'null-loader' },
+          { test: /pollyjs\/persister-fs/, use: 'null-loader' },
+          { test: /pollyjs\/adapter-node-http/, use: 'null-loader' },
+          { test: /requireOrImportModule/, use: 'null-loader' },
+          {
+            test: /\.ts$/,
+            use: [
+              {
+                loader: 'ts-loader',
+                options: {
+                  transpileOnly: true,
+                },
+              },
+            ],
+            exclude: /node_modules/,
+          },
+        ],
+      },
+    },
+  });
+};

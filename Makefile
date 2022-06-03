@@ -1,6 +1,15 @@
 .PHONY: test
 test:
-	pnpm test
+	npm test
 
+.PHONY: integration
 integration:
-	pnpm itest
+	npm run itest
+
+.PHONY: integration-browser
+integration-browser:
+	npm run karma
+
+.PHONY: integration-snap
+integration-snap:
+	npm run itest -- -u

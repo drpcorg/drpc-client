@@ -1,6 +1,8 @@
 import { Polly } from '@pollyjs/core';
 import NodeAdapter from '@pollyjs/adapter-node-http';
-import RESTPersister from '@pollyjs/persister-fs';
+import FsPersister from '@pollyjs/persister-fs';
+import FetchAdapter from '@pollyjs/adapter-fetch';
+import RestPersister from '@pollyjs/persister-rest';
 import {
   makeRequest,
   makeRequestMulti,
@@ -10,25 +12,37 @@ import {
 import Sinon from 'sinon';
 import path from 'path';
 
-Polly.register(NodeAdapter);
-Polly.register(RESTPersister);
+if (NodeAdapter.id) {
+  Polly.register(NodeAdapter);
+  Polly.register(FsPersister);
+} else {
+  Polly.register(FetchAdapter);
+  Polly.register(RestPersister);
+}
 
 const PROXY_URL = 'http://localhost:8090/rpc';
 
 let polly: Polly;
 let state: RpcState;
 beforeAll(() => {
-  polly = new Polly('Dproxy', {
-    adapters: ['node-http'],
-    persister: 'fs',
-  });
-  polly.configure({
-    persisterOptions: {
-      fs: {
-        recordingsDir: path.join(__dirname, '..', '__recordings__'),
+  if (NodeAdapter.id) {
+    polly = new Polly('Dproxy', {
+      adapters: ['node-http'],
+      persister: 'fs',
+    });
+    polly.configure({
+      persisterOptions: {
+        fs: {
+          recordingsDir: path.join(__dirname, '..', '__recordings__'),
+        },
       },
-    },
-  });
+    });
+  } else {
+    polly = new Polly('Dproxy', {
+      adapters: ['fetch'],
+      persister: 'rest',
+    });
+  }
   Sinon.stub(Math, 'random').returns(100);
   state = provider({
     api_key:
@@ -37,11 +51,11 @@ beforeAll(() => {
     provider_ids: ['test'],
     provider_num: 1,
   });
+  Sinon.restore();
 });
 
 afterAll(async () => {
   await polly.stop();
-  Sinon.restore();
 });
 
 describe('Node js env', () => {
