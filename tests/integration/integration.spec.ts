@@ -1,7 +1,12 @@
 import { Polly } from '@pollyjs/core';
 import NodeAdapter from '@pollyjs/adapter-node-http';
 import RESTPersister from '@pollyjs/persister-fs';
-import { makeRequest, makeRequestMulti, provider, RpcState } from '../src/api';
+import {
+  makeRequest,
+  makeRequestMulti,
+  provider,
+  RpcState,
+} from '../../src/api';
 import Sinon from 'sinon';
 import path from 'path';
 
@@ -20,7 +25,7 @@ beforeAll(() => {
   polly.configure({
     persisterOptions: {
       fs: {
-        recordingsDir: path.join(__dirname, '__recordings__'),
+        recordingsDir: path.join(__dirname, '..', '__recordings__'),
       },
     },
   });

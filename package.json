@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest tests/api.spec.ts",
-    "itest": "jest tests/integration.spec.ts"
+    "test": "jest tests/unit/*.spec.ts",
+    "itest": "jest tests/integration/*.spec.ts"
   },
   "type": "module",
   "keywords": [],
