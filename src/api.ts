@@ -134,11 +134,12 @@ async function execute(
   url: string,
   fetchOpt?: typeof getFetch
 ): Promise<ProviderResponse> {
-  let fetch = fetchOpt ? await fetchOpt() : await getFetch();
+  let fetch = fetchOpt ? fetchOpt() : getFetch();
   let response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
     },
+    method: 'POST',
     redirect: 'error',
     referrerPolicy: 'no-referrer',
     body: JSON.stringify(request),
@@ -149,7 +150,6 @@ async function execute(
     HTTPResponse.check(dresponse);
     throw new Error('Impossible, statement above always throws');
   }
-
   if (dresponse.error) {
     throw new Error(dresponse.error.message);
   }
@@ -188,7 +188,8 @@ export async function makeRequestMulti(
 }
 
 export async function makeRequest(rpc: JSONRpc, state: RpcState) {
-  return makeRequestMulti([rpc], state);
+  let responses = await makeRequestMulti([rpc], state);
+  return responses[0];
 }
 
 export function provider(settings: ProviderSettings): RpcState {

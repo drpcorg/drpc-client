@@ -280,11 +280,11 @@ describe('Drpc Api', () => {
         });
 
         state.fetchOpt = function () {
-          return Promise.resolve(function () {
+          return function () {
             return Promise.resolve({
               json: () => ({ result: value[1] }),
             });
-          });
+          };
         } as any;
 
         const behav = value[2];
