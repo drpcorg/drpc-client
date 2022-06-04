@@ -33,7 +33,7 @@ beforeAll(() => {
     polly.configure({
       persisterOptions: {
         fs: {
-          recordingsDir: path.join(__dirname, '..', '__recordings__'),
+          recordingsDir: path.join(__dirname, '..', '__recordings__', 'node'),
         },
       },
     });

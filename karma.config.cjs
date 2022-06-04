@@ -21,7 +21,7 @@ module.exports = function (config) {
       'tests/karma-setup.js': ['webpack'],
     },
     pollyConfig: {
-      recordings: './tests/__recordings_browser__',
+      recordings: './tests/__recordings_browser__/browser',
       port: 3000,
     },
     singleRun: true,

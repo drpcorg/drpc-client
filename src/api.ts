@@ -22,6 +22,7 @@ export type RpcState = {
   nextReqId: number;
   provider_ids: string[];
   provider_num: number;
+  network: string;
   api_key: string;
   fetchOpt?: typeof getFetch;
 };
@@ -31,6 +32,7 @@ export type ProviderSettings = {
   provider_ids: string[];
   provider_num?: number;
   api_key: string;
+  network?: string;
 };
 
 export type JSONRpc = {
@@ -182,6 +184,7 @@ export async function makeRequestMulti(
     provider_num: state.provider_num,
     rpc: preqs,
     api_key: state.api_key,
+    network: state.network,
   };
   let response = await execute(request, state.url, state.fetchOpt);
   return response.rpc_data?.map((el) => el.payload) ?? [];
@@ -204,6 +207,7 @@ export function provider(settings: ProviderSettings): RpcState {
     nextNonce: initNonce(),
     nextReqId: initNonce(),
     url: settings.url,
+    network: settings.network || 'ethereum',
   };
 }
 
