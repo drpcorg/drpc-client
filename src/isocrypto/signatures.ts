@@ -8,6 +8,10 @@ function removeZeros(s: Uint8Array): Uint8Array {
   return s.slice(leadingZeros);
 }
 
+/**
+ * This converts ASN.1 DER signature format to plain r|s format.
+ * Heavily relying on the specificity of encoding EC keys.
+ */
 function asn1derToIee(buf: ArrayBuffer) {
   let ubuf = new Uint8Array(buf);
   // check if this ASN.1 DER
