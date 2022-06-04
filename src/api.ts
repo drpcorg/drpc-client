@@ -10,6 +10,7 @@ import { CheckerT, createCheckers } from 'ts-interface-checker';
 import suite from 'dproxy/ts/protocol-ti.cjs';
 import { getFetch } from './getfetch';
 import { initNonce } from './utils';
+import { checkSignatures } from './signatures';
 
 let { HTTPResponse } = createCheckers(suite) as {
   HTTPResponse: CheckerT<HTTPResponse>;
@@ -101,10 +102,10 @@ function hasConsensus(collection: ProviderResponse[], total: number): boolean {
   return Math.floor((2 * total) / 3) + 1 <= collection.length;
 }
 
-export function validateResponse(
+export async function validateResponse(
   request: DrpcRequest,
   dresponse: DrpcResponse
-): ProviderResponse {
+): Promise<ProviderResponse> {
   if (dresponse.id !== request.id) {
     throw new Error('Response id and request id are not equal');
   }
@@ -127,8 +128,16 @@ export function validateResponse(
   if (!hasConsensus(equaled, request.provider_num)) {
     throw new ConsensusError(`maximum ${equaled.length} providers agreed`, []);
   }
-  //TODO: check signatures
-  return equaled.pop() as ProviderResponse;
+
+  let verified = await checkSignatures(equaled, request);
+  if (!hasConsensus(verified, request.provider_num)) {
+    throw new ConsensusError(
+      `only ${verified.length} providers correctly signed response`,
+      []
+    );
+  }
+
+  return verified.pop() as ProviderResponse;
 }
 
 async function execute(

@@ -21,10 +21,10 @@ module.exports = function (config) {
       'tests/karma-setup.js': ['webpack'],
     },
     pollyConfig: {
-      recordings: './tests/__recordings_browser__/browser',
+      recordings: './tests/__recordings__/browser',
       port: 3000,
     },
-    singleRun: true,
+
     browsers: ['Chrome_without_security'],
     karmaTypescriptConfig: {
       tsconfig: './tsconfig.json',
@@ -36,7 +36,7 @@ module.exports = function (config) {
       },
     },
     webpack: {
-      watch: false,
+      watch: true,
       resolve: {
         fallback: {
           path: require.resolve('path-browserify'),

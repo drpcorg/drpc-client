@@ -20,6 +20,7 @@ import {
 const default_request = {
   api_key: '',
   id: '1',
+  network: 'ethereum',
   provider_ids: ['test1', 'test2', 'test3'],
   provider_num: 1,
   rpc: [
@@ -36,10 +37,11 @@ const default_request = {
 const default_rpc_data = {
   error: '',
   id: '1',
-  nonce: 0,
-  signature: '',
+  nonce: 1,
+  signature: '1212',
   ok: true,
   payload: 'data1',
+  upstream_id: 'test',
 };
 
 function createRpcData(data: Partial<JSONRPCResponse> = {}): JSONRPCResponse {
@@ -114,30 +116,46 @@ const requestResponsePairs: {
     createRequest({
       provider_ids: ['test1', 'test2', 'test3'],
       provider_num: 3,
+      rpc: [
+        {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'eth_test',
+          nonce: 1,
+          params: [],
+        },
+        {
+          id: '2',
+          jsonrpc: '2.0',
+          method: 'eth_test',
+          nonce: 2,
+          params: [],
+        },
+      ],
     }),
     createResponse({
       responses: [
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data3' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data3' }),
             ],
           }),
         },
@@ -149,30 +167,46 @@ const requestResponsePairs: {
     createRequest({
       provider_ids: ['test1', 'test2', 'test3'],
       provider_num: 3,
+      rpc: [
+        {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'eth_test',
+          nonce: 1,
+          params: [],
+        },
+        {
+          id: '2',
+          jsonrpc: '2.0',
+          method: 'eth_test',
+          nonce: 2,
+          params: [],
+        },
+      ],
     }),
     createResponse({
       responses: [
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1', signature: '2' }),
-              createRpcData({ id: 'rtest2', payload: 'data2', signature: '1' }),
+              createRpcData({ id: '1', payload: 'data1', signature: '2' }),
+              createRpcData({ id: '2', payload: 'data2', signature: '1' }),
             ],
           }),
         },
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
@@ -184,30 +218,46 @@ const requestResponsePairs: {
     createRequest({
       provider_ids: ['test1', 'test2', 'test3', 'test4'],
       provider_num: 4,
+      rpc: [
+        {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'eth_test',
+          nonce: 1,
+          params: [],
+        },
+        {
+          id: '2',
+          jsonrpc: '2.0',
+          method: 'eth_test',
+          nonce: 2,
+          params: [],
+        },
+      ],
     }),
     createResponse({
       responses: [
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
         {
           result: createProviderRespone({
             rpc_data: [
-              createRpcData({ id: 'rtest1', payload: 'data1' }),
-              createRpcData({ id: 'rtest2', payload: 'data2' }),
+              createRpcData({ id: '1', payload: 'data1' }),
+              createRpcData({ id: '2', payload: 'data2' }),
             ],
           }),
         },
@@ -220,6 +270,7 @@ const requestResponsePairs: {
   ],
 };
 
+jest.mock('../../src/isocrypto/signatures');
 describe('Drpc Api', () => {
   afterEach(() => {
     sinon.restore();
@@ -240,6 +291,7 @@ describe('Drpc Api', () => {
         provider_ids: ['test'],
         nextReqId: 0,
         provider_num: 1,
+        network: 'ethereum',
         url: 'test',
       } as RpcState);
     });
@@ -247,18 +299,18 @@ describe('Drpc Api', () => {
 
   describe('fn#validateResponse', () => {
     Object.entries(requestResponsePairs).forEach(([key, value]) => {
-      it(key, () => {
+      it(key, async () => {
         const behav = value[2];
         switch (behav.kind) {
           case 'correct':
-            expect(validateResponse(value[0], value[1])).to.deep.equal(
+            expect(await validateResponse(value[0], value[1])).to.deep.equal(
               value[1].responses[0].result
             );
             break;
           case 'throws':
-            expect(() => {
-              validateResponse(value[0], value[1]);
-            }).to.throw(behav.error);
+            await (
+              expect(validateResponse(value[0], value[1])).to.be as any
+            ).rejectedWith(behav.error);
             break;
         }
       });

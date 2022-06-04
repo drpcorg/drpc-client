@@ -52,6 +52,9 @@ beforeAll(() => {
     provider_num: 1,
   });
   Sinon.restore();
+  if (process.env.NO_POLLY) {
+    polly.pause();
+  }
 });
 
 afterAll(async () => {
