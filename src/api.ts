@@ -183,7 +183,7 @@ export async function makeRequestMulti(
   rpcs: JSONRpc[],
   state: RpcState,
   fetchOpt?: typeof getFetch
-): Promise<JSONRpc[]> {
+): Promise<any[]> {
   let preqs = rpcs.map((rpc) =>
     creteRequestItem(id(state), nonce(state), rpc.method, rpc.params)
   );
@@ -216,7 +216,7 @@ export function provider(settings: ProviderSettings): RpcState {
     nextNonce: initNonce(),
     nextReqId: initNonce(),
     url: settings.url,
-    network: settings.network || 'ethereum',
+    network: settings.network || 'homestead',
   };
 }
 
