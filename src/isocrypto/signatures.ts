@@ -20,7 +20,6 @@ function asn1derToIee(buf: ArrayBuffer) {
   }
 
   const rlen_index = 3;
-  const rlen = ubuf[3];
   const r = removeZeros(
     ubuf.slice(rlen_index + 1, ubuf[rlen_index] + rlen_index + 1)
   );
