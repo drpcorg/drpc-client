@@ -13,3 +13,7 @@ integration-browser:
 .PHONY: integration-snap
 integration-snap:
 	npm run itest -- -u
+
+.PHONY: build
+build:
+	npm run build
