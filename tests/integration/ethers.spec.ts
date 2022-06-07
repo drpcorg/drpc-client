@@ -1,29 +1,25 @@
 import { DrpcProvider } from '../../src/providers/ethers';
-import { initTests } from '../integration-init';
 import { Polly } from '@pollyjs/core';
-import { RpcState } from '../../src/api';
+import { initPolly, initState } from '../integration-init';
 
 let polly: Polly;
-let state: RpcState;
-beforeAll(() => {
-  let init = initTests();
-  state = init[0];
-  polly = init[1];
-});
-
 afterAll(async () => {
   await polly.stop();
 });
 
 describe('ethers provider', () => {
+  beforeAll(() => {
+    polly = initPolly('ethers');
+  });
+
   it('requests block height', async () => {
-    let provider = new DrpcProvider(state);
+    let provider = new DrpcProvider(initState());
     let result = await provider.getBlockNumber();
     expect(result).toMatchInlineSnapshot(`1048577`);
   });
 
   it('requests block', async () => {
-    let provider = new DrpcProvider(state);
+    let provider = new DrpcProvider(initState());
     let result = await provider.getBlock('0x100001');
     expect(result).toMatchInlineSnapshot(`
 Object {

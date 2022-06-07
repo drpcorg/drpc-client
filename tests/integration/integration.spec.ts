@@ -1,27 +1,22 @@
 import { Polly } from '@pollyjs/core';
-import { makeRequest, makeRequestMulti, RpcState } from '../../src/api';
-import { initTests } from '../integration-init';
-
+import { makeRequest, makeRequestMulti } from '../../src/api';
+import { initPolly, initState } from '../integration-init';
 let polly: Polly;
-let state: RpcState;
-beforeAll(() => {
-  let init = initTests();
-  state = init[0];
-  polly = init[1];
-});
-
 afterAll(async () => {
   await polly.stop();
 });
-
 describe('Node js env', () => {
+  beforeAll(() => {
+    polly = initPolly('api');
+  });
+
   it('tests single response', async () => {
     let res = await makeRequest(
       {
         method: 'eth_blockNumber',
         params: [],
       },
-      state
+      initState()
     );
     expect(res).toMatchInlineSnapshot(`"0x100001"`);
   });
@@ -38,7 +33,7 @@ describe('Node js env', () => {
           params: ['0x100001'],
         },
       ],
-      state
+      initState()
     );
     expect(res).toMatchInlineSnapshot(`
 Array [

@@ -26,9 +26,6 @@ module.exports = function (config) {
     },
 
     browsers: ['Chrome_without_security'],
-    karmaTypescriptConfig: {
-      tsconfig: './tsconfig.json',
-    },
     customLaunchers: {
       Chrome_without_security: {
         base: 'ChromeHeadless',
