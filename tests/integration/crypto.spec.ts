@@ -28,6 +28,18 @@ beforeAll(async () => {
 });
 
 describe('isocrypto', () => {
+  it('checks signature with specific asn1 encoding', async () => {
+    const data =
+      'DSHACKLESIG/450359962737049540/test-2/f3ddd3ab6a547869e61881e6ef94c780e2f201f7f0c45f589344f4749c426846';
+    expect(
+      await checkSha256(
+        data,
+        '3044022100d89722ff91cf05ef60eb54d2d61c5ed03a256f49241531640d1da19776863fa9021f516afbc8c6bc19fc975e3636cac5349955ffdb49df27eda74aa43a3d8a4bed',
+        KEYS['test']
+      )
+    ).toBeTruthy();
+  });
+
   it('creates sha256', async () => {
     let result = await sha256('mytest');
     expect(result).toEqual(
