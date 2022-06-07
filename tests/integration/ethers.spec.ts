@@ -1,5 +1,4 @@
 import { DrpcProvider } from '../../src/providers/ethers';
-// import { ethers } from 'ethers';
 import { initTests } from '../integration-init';
 import { Polly } from '@pollyjs/core';
 import { RpcState } from '../../src/api';

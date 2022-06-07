@@ -15,12 +15,12 @@ import {
   Request as DrpcRequest,
   ProviderResponse,
   JSONRPCResponse,
-} from 'dproxy/ts/protocol.cjs';
+} from 'drpc-proxy';
 
 const default_request = {
   api_key: '',
   id: '1',
-  network: 'ethereum',
+  network: 'homestead',
   provider_ids: ['test1', 'test2', 'test3'],
   provider_num: 1,
   rpc: [
@@ -291,7 +291,7 @@ describe('Drpc Api', () => {
         provider_ids: ['test'],
         nextReqId: 0,
         provider_num: 1,
-        network: 'ethereum',
+        network: 'homestead',
         url: 'test',
       } as RpcState);
     });

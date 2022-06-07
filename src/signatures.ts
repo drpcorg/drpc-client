@@ -2,7 +2,7 @@ import {
   JSONRPCResponse,
   ProviderResponse,
   Request as DrpcRequest,
-} from 'dproxy/ts/protocol.cjs';
+} from 'drpc-proxy';
 import PUBLIC_KEYS from './keys';
 import { sha256 } from './isocrypto/hashes';
 import { checkSha256 } from './isocrypto/signatures';

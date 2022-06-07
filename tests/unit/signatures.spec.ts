@@ -1,7 +1,4 @@
-import {
-  ProviderResponse,
-  Request as DrpcRequest,
-} from 'dproxy/ts/protocol.cjs';
+import { ProviderResponse, Request as DrpcRequest } from 'drpc-proxy';
 import { checkSignatures } from '../../src/signatures';
 jest.mock('../../src/isocrypto/signatures');
 describe('Signatures', () => {

@@ -5,9 +5,9 @@ import type {
   Request as DrpcRequest,
   Response as DrpcResponse,
   HTTPResponse,
-} from 'dproxy/ts/protocol.cjs';
+} from 'drpc-proxy';
 import { CheckerT, createCheckers } from 'ts-interface-checker';
-import suite from 'dproxy/ts/protocol-ti.cjs';
+import suite from 'drpc-proxy/protocol-ti.cjs';
 import { getFetch } from './getfetch';
 import { initNonce } from './utils';
 import { checkSignatures } from './signatures';
