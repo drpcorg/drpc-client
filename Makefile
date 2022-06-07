@@ -1,19 +1,32 @@
-.PHONY: test
 test:
-	npm test
+	npx jest tests/unit/*.spec.ts
 
-.PHONY: integration
-integration:
-	npm run itest
+RUN_INTEGRATIONS_NODE = npx jest tests/integration/*.spec.ts
+RUN_INTEGRATIONS_NODE_ARGS = --watch
+ifeq ($(NOWATCH), true)
+	RUN_INTEGRATIONS_NODE_ARGS =
+endif
+integration-node:
+	$(RUN_INTEGRATIONS_NODE) $(RUN_INTEGRATIONS_NODE_ARGS)
 
-.PHONY: integration-browser
-integration-browser:
-	npm run karma
-
-.PHONY: integration-snap
 integration-snap:
-	npm run itest -- -u
+	$(RUN_INTEGRATIONS_NODE) -- -u
 
-.PHONY: build
-build:
-	npm run build
+KARMA_CONFIG=./karma.config.cjs
+ifeq ($(NOWATCH), true)
+	KARMA_CONFIG = ./karma.config-single.cjs
+endif
+integration-browser:
+	npx karma start $(KARMA_CONFIG)
+
+build: clean
+	npx tsc -p ./tsconfig.json --outDir ./build
+
+clean:
+	rm -rf ./build
+
+run-publish: test integration-node integration-browser clean build
+	npm publish
+
+publish:
+	$(MAKE) run-publish NOWATCH=true

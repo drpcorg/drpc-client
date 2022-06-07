@@ -1,16 +1,11 @@
 {
-  "name": "drpc",
-  "version": "1.0.0",
+  "name": "drpc-sdk",
+  "version": "0.1.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest tests/unit/*.spec.ts",
-    "test-watch": "jest --watch tests/unit/*.spec.ts",
-    "itest": "jest tests/integration/*.spec.ts",
-    "itest-watch": "jest --watch tests/integration/*.spec.ts",
-    "karma": "karma start ./karma.config.cjs",
-    "build": "tsc -p ./tsconfig.json --outDir ./build"
-  },
+  "main": "build/api.js",
+  "files": [
+    "build/**/*"
+  ],
   "type": "module",
   "keywords": [],
   "author": "",
