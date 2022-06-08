@@ -16,6 +16,9 @@ let { HTTPResponse } = createCheckers(suite) as {
   HTTPResponse: CheckerT<HTTPResponse>;
 };
 
+/**
+ * Type describing provider state
+ */
 export type RpcState = {
   url: string;
   nextNonce: number;
@@ -28,6 +31,9 @@ export type RpcState = {
   fetchOpt?: typeof getFetch;
 };
 
+/**
+ * Type describing provider settings
+ */
 export type ProviderSettings = {
   url: string;
   provider_ids: string[];
@@ -36,6 +42,9 @@ export type ProviderSettings = {
   network?: string;
 };
 
+/**
+ * Simple JSON rpc request type
+ */
 export type JSONRpc = {
   method: string;
   params: any[];
@@ -56,6 +65,10 @@ function creteRequestItem(
   };
 }
 
+/**
+ * This error is thrown when we couldn't find a consensus between different providers
+ * on a given request
+ */
 export class ConsensusError extends Error {
   readonly errors: ProtocolError[];
   constructor(msg: string, errors: ProtocolError[]) {
@@ -102,6 +115,13 @@ function hasConsensus(collection: ProviderResponse[], total: number): boolean {
   return Math.floor((2 * total) / 3) + 1 <= collection.length;
 }
 
+/**
+ * Checks provider consensus client-side. For now, consensus is when >= 2n/3 providers agreed on all checks, where n is a total number of providers
+ * - filters providers that returned errors
+ * - finds the set biggest set of providers, that agreed on a given request response data
+ * - filters providers that incorrectly signed data
+ * - returns random data provider response that is a part of consensus
+ */
 export async function validateResponse(
   request: DrpcRequest,
   dresponse: DrpcResponse
@@ -180,7 +200,7 @@ function reqid(state: RpcState) {
 }
 
 /**
- * Make JSON RPC batch request using state provided
+ * Makes JSON RPC batch request using state provided
  *
  * @param rpcs list of JSON RPC requests
  * @param state current provider state
@@ -207,7 +227,7 @@ export async function makeRequestMulti(
 }
 
 /**
- * Make JSON RPC request using state provided
+ * Makes JSON RPC request using state provided
  *
  * @param rpc JSON RPC requests
  * @param state current provider state
