@@ -30,3 +30,6 @@ run-publish: test integration-node integration-browser clean build
 
 publish:
 	$(MAKE) run-publish NOWATCH=true
+
+doc:
+	npx typedoc
