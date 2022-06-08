@@ -16,7 +16,10 @@ describe('Node js env', () => {
         method: 'eth_blockNumber',
         params: [],
       },
-      initState()
+      initState({
+        provider_ids: ['test', 'test1'],
+        provider_num: 2,
+      })
     );
     // @ts-ignore
     expect(res).toMatchInlineSnapshot(`
