@@ -208,7 +208,7 @@ function nonce(state: RpcState) {
   return ++state.nextNonce;
 }
 
-function id(state: RpcState) {
+export function id(state: RpcState) {
   return ++state.nextId;
 }
 

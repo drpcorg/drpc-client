@@ -1,9 +1,5 @@
-let fetchFn: typeof globalThis.fetch;
-
 export function getFetch() {
-  if (fetchFn) {
-    return fetchFn;
-  }
+  let fetchFn: typeof globalThis.fetch;
   if (globalThis.fetch as any) {
     fetchFn = globalThis.fetch;
   } else {

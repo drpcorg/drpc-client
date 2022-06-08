@@ -1,13 +1,14 @@
 import { Polly } from '@pollyjs/core';
 import { makeRequest, makeRequestMulti } from '../../src/api';
 import { initPolly, initState } from '../integration-init';
+
 let polly: Polly;
-afterAll(async () => {
-  await polly.stop();
-});
 describe('Node js env', () => {
   beforeAll(() => {
     polly = initPolly('api');
+  });
+  afterAll(async () => {
+    await polly.stop();
   });
 
   it('tests single response', async () => {
@@ -24,7 +25,7 @@ describe('Node js env', () => {
     // @ts-ignore
     expect(res).toMatchInlineSnapshot(`
 Object {
-  "id": "450359962737049540",
+  "id": "1",
   "jsonrpc": "2.0",
   "result": "0x100001",
 }
@@ -52,21 +53,21 @@ Object {
 
   it('returns data with error', () => {
     return expect(
-      makeRequest(
-        {
-          method: 'eth_gasPrice',
-          params: [],
-        },
+makeRequest(
+{
+  method: 'eth_gasPrice',
+  params: [] },
 
-        initState()
-      )
-    ).resolves.toMatchInlineSnapshot(`
+
+initState())).
+
+resolves.toMatchInlineSnapshot(`
 Object {
   "error": Object {
     "code": 0,
     "message": "Call is not supported",
   },
-  "id": "450359962737049540",
+  "id": "1",
   "jsonrpc": "2.0",
 }
 `);
@@ -90,12 +91,12 @@ Object {
     expect(res).toMatchInlineSnapshot(`
 Array [
   Object {
-    "id": "450359962737049540",
+    "id": "1",
     "jsonrpc": "2.0",
     "result": "0x100001",
   },
   Object {
-    "id": "450359962737049540",
+    "id": "2",
     "jsonrpc": "2.0",
     "result": Object {
       "difficulty": "0xc6ba1fe7c49",

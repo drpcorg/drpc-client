@@ -1,8 +1,8 @@
-import { JSONRpc, makeRequestMulti, RpcState } from '../../src/api';
+import { JSONRpc, makeRequestMulti, RpcState, id } from '../../src/api';
 import type { AbstractProvider } from 'web3-core';
 
 export class DrpcProvider implements AbstractProvider {
-  readonly state;
+  private state: RpcState;
   constructor(state: RpcState) {
     this.state = state;
   }
@@ -13,20 +13,17 @@ export class DrpcProvider implements AbstractProvider {
       payload = [payload];
       batch = false;
     }
+    let ids: any = {};
     let rpcs: JSONRpc[] = payload.map((el: any) => {
+      let iid = id(this.state);
+      ids[iid] = el.id;
       return {
         method: el.method,
         params: el.params,
-        id: el.id,
+        id: iid,
       };
     });
 
-    // web3 is ok with number and string ids
-    // we expect only strings, so we just save those to remap as needed
-    let ids = payload.reduce((acc: any, el: any) => {
-      acc[el.id] = el.id;
-      return acc;
-    }, {});
     try {
       let result = await makeRequestMulti(rpcs, this.state);
       let mresult = result.map((el) => {

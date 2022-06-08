@@ -16,7 +16,6 @@ if (NodeAdapter.id) {
 }
 
 const PROXY_URL = 'http://localhost:8090/rpc';
-let pollyCache: Polly;
 export function initPolly(name: string): Polly {
   let polly: Polly;
   if (NodeAdapter.id) {
@@ -30,15 +29,10 @@ export function initPolly(name: string): Polly {
       },
     });
   } else {
-    if (pollyCache) {
-      polly = pollyCache;
-    } else {
-      polly = new Polly('drpc', {
-        adapters: ['fetch'],
-        persister: 'rest',
-      });
-      pollyCache = polly;
-    }
+    polly = new Polly(name, {
+      adapters: ['fetch'],
+      persister: 'rest',
+    });
   }
   if (process.env.NO_POLLY) {
     polly.pause();
@@ -47,7 +41,7 @@ export function initPolly(name: string): Polly {
 }
 
 export function initState(pstate: Partial<RpcState> = {}) {
-  Sinon.stub(Math, 'random').returns(100);
+  Sinon.stub(Math, 'random').returns(0);
   let state = provider({
     api_key:
       'eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiJ0ZXN0aW5nIiwiZXhwIjoxNjYyODk4MDg0LCJqdGkiOiJ0ZXN0aW5nIiwiaWF0IjoxNjU0MjU4MDg0fQ.AHL7zUJ1SoBFoNFtT4wXnDTMExfJsJtzqZuGGrxB8By09uBoqPqisUuF2LF15k_fWsJ1zwo-308-WaybBkgpsGndALXFEvzxJ0-ZhSso7VHN0iF4qeWq1gbsCQKer_L9aDCUrnz2UR-xVeri0hqZ2-KheE861fIVKRsCMcvSsVuZeOEB',

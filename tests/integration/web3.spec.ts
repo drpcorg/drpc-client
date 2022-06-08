@@ -4,10 +4,6 @@ import { initPolly, initState } from '../integration-init';
 import Web3 from 'web3';
 
 let polly: Polly;
-afterAll(async () => {
-  await polly.stop();
-});
-
 function createCallbackPromise(): [
   Promise<any>,
   (value: unknown) => void,
@@ -26,6 +22,10 @@ function createCallbackPromise(): [
 describe('web3 provider', () => {
   beforeAll(() => {
     polly = initPolly('web3');
+  });
+
+  afterAll(async () => {
+    await polly.stop();
   });
 
   it('timeouts', () => {
@@ -47,7 +47,9 @@ describe('web3 provider', () => {
   it('returns data with error', async () => {
     let provider = new DrpcProvider(initState());
     let web3 = new Web3(provider);
-    return expect(web3.eth.getGasPrice()).rejects.toMatchInlineSnapshot(`[Error: Returned error: Call is not supported]`);
+    return expect(web3.eth.getGasPrice()).rejects.toMatchInlineSnapshot(
+      `[Error: Returned error: Call is not supported]`
+    );
   });
 
   it('requests block height', async () => {
@@ -58,7 +60,7 @@ describe('web3 provider', () => {
     expect(result).toMatchInlineSnapshot(`1048577`);
   });
 
-  it('requests block', async () => {
+  it('requests block and block height', async () => {
     let provider = new DrpcProvider(initState());
     let web3 = new Web3(provider);
     var batch = new web3.BatchRequest();

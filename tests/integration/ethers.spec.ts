@@ -3,13 +3,12 @@ import { Polly } from '@pollyjs/core';
 import { initPolly, initState } from '../integration-init';
 
 let polly: Polly;
-afterAll(async () => {
-  await polly.stop();
-});
-
 describe('ethers provider', () => {
   beforeAll(() => {
     polly = initPolly('ethers');
+  });
+  afterAll(async () => {
+    await polly.stop();
   });
 
   it('requests block height', async () => {
