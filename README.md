@@ -38,7 +38,7 @@ async function getBlockHeight() {
 If you're using `ethers.js`, drpc-sdk exposes provider
 
 ```js
-import {} from 'drpc-sdk/providers/ethers';
+import { DrpcProvider } from 'drpc-sdk/providers/ethers';
 
 async function getBlock(tag) {
   let state = provider({
