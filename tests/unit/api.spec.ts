@@ -287,6 +287,7 @@ describe('Drpc Api', () => {
       ).to.deep.equal({
         api_key: 'test',
         nextId: 0,
+        timeout: 5000,
         nextNonce: 0,
         provider_ids: ['test'],
         nextReqId: 0,
@@ -343,8 +344,13 @@ describe('Drpc Api', () => {
         switch (behav.kind) {
           case 'correct':
             expect(await makeRequestMulti(req, state)).to.deep.equal(
-              value[1].responses[0].result?.rpc_data?.map((el) => el.payload) ??
-                []
+              value[1].responses[0].result?.rpc_data?.map((el) => {
+                return {
+                  result: el.payload,
+                  id: el.id,
+                  jsonrpc: '2.0',
+                };
+              }) ?? []
             );
             break;
           case 'throws':
