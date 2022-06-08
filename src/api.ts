@@ -48,16 +48,17 @@ export type ProviderSettings = {
 export type JSONRpc = {
   method: string;
   params: any[];
+  id?: number;
 };
 
-function creteRequestItem(
-  id: number,
+function createRequestItem(
+  id: string,
   nonce: number,
   method: string,
   params: any[]
 ): JSONRPCRequest {
   return {
-    id: id.toString(),
+    id: id,
     nonce,
     jsonrpc: '2.0',
     method,
@@ -212,7 +213,12 @@ export async function makeRequestMulti(
   fetchOpt?: typeof getFetch
 ): Promise<any[]> {
   let preqs = rpcs.map((rpc) =>
-    creteRequestItem(id(state), nonce(state), rpc.method, rpc.params)
+    createRequestItem(
+      (rpc.id ? rpc.id : id(state)).toString(),
+      nonce(state),
+      rpc.method,
+      rpc.params
+    )
   );
   const request: DrpcRequest = {
     id: reqid(state).toString(),
@@ -223,7 +229,13 @@ export async function makeRequestMulti(
     network: state.network,
   };
   let response = await execute(request, state.url, state.fetchOpt);
-  return response.rpc_data?.map((el) => el.payload) ?? [];
+  return (
+    response.rpc_data?.map((el) => ({
+      jsonrpc: '2.0',
+      id: el.id,
+      result: el.payload,
+    })) ?? []
+  );
 }
 
 /**

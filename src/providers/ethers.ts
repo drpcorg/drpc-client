@@ -50,7 +50,9 @@ export class DrpcProvider extends StaticJsonRpcProvider {
       }, 0);
     }
 
-    return result;
+    return result.then((data) => {
+      return data.result;
+    });
   }
 
   _startPending(): void {

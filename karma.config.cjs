@@ -42,12 +42,22 @@ module.exports = function (config) {
           url: require.resolve('url/'),
           process: require.resolve('process/browser'),
           module: false,
+          crypto: false,
+          process: require.resolve('process/browser'),
+          stream: false,
+          assert: require.resolve('assert/'),
+          http: false,
+          https: false,
+          os: require.resolve('os-browserify'),
         },
         extensions: ['.ts', '.js', '.cjs'],
       },
       plugins: [
         new webpack.DefinePlugin({
           __isBrowser__: 'true',
+        }),
+        new webpack.ProvidePlugin({
+          Buffer: ['buffer', 'Buffer'],
         }),
       ],
       module: {
