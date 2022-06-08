@@ -29,7 +29,11 @@ async function getBlockHeight() {
 }
 ```
 
-## Ethers.js provider
+## Documentation
+
+[API Documentation](https://p2p-org.github.io/drpc-client/)
+
+### Ethers.js provider
 
 If you're using `ethers.js`, drpc-sdk exposes provider
 
