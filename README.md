@@ -1,7 +1,7 @@
 # DRPC SDK
 
 Client-side library for working with DRPC (drpc.org). It's responsibility to communicate with DRPC and also to check provided
-signatures for response data, validating data authenticity.
+signatures for response data, validating data authenticity. Supports node and browser.
 
 ## Installation
 

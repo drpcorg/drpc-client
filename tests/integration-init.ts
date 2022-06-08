@@ -5,7 +5,7 @@ import FetchAdapter from '@pollyjs/adapter-fetch';
 import RestPersister from '@pollyjs/persister-rest';
 import Sinon from 'sinon';
 import path from 'path';
-import { provider } from '../src/api';
+import { provider, RpcState } from '../src/api';
 
 if (NodeAdapter.id) {
   Polly.register(NodeAdapter);
@@ -46,7 +46,7 @@ export function initPolly(name: string): Polly {
   return polly;
 }
 
-export function initState() {
+export function initState(pstate: Partial<RpcState> = {}) {
   Sinon.stub(Math, 'random').returns(100);
   let state = provider({
     api_key:
@@ -56,5 +56,5 @@ export function initState() {
     provider_num: 1,
   });
   Sinon.restore();
-  return state;
+  return { ...state, ...pstate };
 }

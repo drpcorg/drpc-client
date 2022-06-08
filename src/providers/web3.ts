@@ -27,15 +27,19 @@ export class DrpcProvider implements AbstractProvider {
       acc[el.id] = el.id;
       return acc;
     }, {});
-    let result = await makeRequestMulti(rpcs, this.state);
-    let mresult = result.map((el) => {
-      el.id = ids[el.id];
-      return el;
-    });
-    if (batch) {
-      callback(null, mresult);
-    } else {
-      callback(null, mresult[0]);
+    try {
+      let result = await makeRequestMulti(rpcs, this.state);
+      let mresult = result.map((el) => {
+        el.id = ids[el.id];
+        return el;
+      });
+      if (batch) {
+        callback(null, mresult);
+      } else {
+        callback(null, mresult[0]);
+      }
+    } catch (e: unknown) {
+      callback(e);
     }
   }
 

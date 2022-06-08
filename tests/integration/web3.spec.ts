@@ -28,10 +28,27 @@ describe('web3 provider', () => {
     polly = initPolly('web3');
   });
 
+  it('timeouts', () => {
+    let provider = new DrpcProvider(
+      initState({
+        timeout: 100,
+        fetchOpt: () =>
+          (() => {
+            return new Promise(() => {});
+          }) as any,
+      })
+    );
+    let web3 = new Web3(provider);
+    return expect(web3.eth.getBlockNumber()).rejects.toMatchInlineSnapshot(
+      `[Error: Request exceeded timeout of 100]`
+    );
+  });
+
   it('requests block height', async () => {
     let provider = new DrpcProvider(initState());
     let web3 = new Web3(provider);
     let result = await web3.eth.getBlockNumber();
+    // @ts-ignore
     expect(result).toMatchInlineSnapshot(`1048577`);
   });
 
@@ -45,6 +62,7 @@ describe('web3 provider', () => {
       //@ts-ignore
       web3.eth.getBlock.request(0x100001, (error, result) => {
         try {
+          // @ts-ignore
           expect(result).toMatchInlineSnapshot(`
 Object {
   "difficulty": "13656418843721",
@@ -85,6 +103,7 @@ Object {
       //@ts-ignore
       web3.eth.getBlockNumber.request((error, result) => {
         try {
+          // @ts-ignore
           expect(result).toMatchInlineSnapshot(`1048577`);
           blocknumpres(null);
         } catch (e: unknown) {

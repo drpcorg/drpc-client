@@ -18,6 +18,7 @@ describe('Node js env', () => {
       },
       initState()
     );
+    // @ts-ignore
     expect(res).toMatchInlineSnapshot(`
 Object {
   "id": "450359962737049540",
@@ -25,6 +26,25 @@ Object {
   "result": "0x100001",
 }
 `);
+  });
+
+  it('timeouts', () => {
+    return expect(
+      makeRequest(
+        {
+          method: 'eth_blockNumber',
+          params: [],
+        },
+
+        initState({
+          timeout: 100,
+          fetchOpt: () =>
+            (() => {
+              return new Promise(() => {});
+            }) as any,
+        })
+      )
+    ).rejects.toMatchInlineSnapshot(`[Error: Request exceeded timeout of 100]`);
   });
 
   it('tests multi response', async () => {
@@ -41,6 +61,7 @@ Object {
       ],
       initState()
     );
+    // @ts-ignore
     expect(res).toMatchInlineSnapshot(`
 Array [
   Object {

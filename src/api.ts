@@ -23,6 +23,7 @@ export type RpcState = {
   url: string;
   nextNonce: number;
   nextId: number;
+  timeout: number;
   nextReqId: number;
   provider_ids: string[];
   provider_num: number;
@@ -38,6 +39,7 @@ export type ProviderSettings = {
   url: string;
   provider_ids: string[];
   provider_num?: number;
+  timeout?: number;
   api_key: string;
   network?: string;
 };
@@ -164,19 +166,33 @@ export async function validateResponse(
 async function execute(
   request: DrpcRequest,
   url: string,
+  timeout: number,
   fetchOpt?: typeof getFetch
 ): Promise<ProviderResponse> {
   let fetch = fetchOpt ? fetchOpt() : getFetch();
-  let response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-    redirect: 'error',
-    referrerPolicy: 'no-referrer',
-    body: JSON.stringify(request),
+  let timeoutRef: any = 0;
+  let controller = new AbortController();
+  let timeoutP: Promise<any> = new Promise((res, rej) => {
+    timeoutRef = setTimeout(() => {
+      controller.abort();
+      rej(new Error(`Request exceeded timeout of ${timeout}`));
+    }, timeout);
   });
-
+  let response: any;
+  response = await Promise.race([
+    timeoutP,
+    fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      method: 'POST',
+      redirect: 'error',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify(request),
+    }),
+  ]);
+  clearTimeout(timeoutRef);
   let dresponse = await response.json();
   if (!HTTPResponse.test(dresponse)) {
     HTTPResponse.check(dresponse);
@@ -228,7 +244,12 @@ export async function makeRequestMulti(
     api_key: state.api_key,
     network: state.network,
   };
-  let response = await execute(request, state.url, state.fetchOpt);
+  let response = await execute(
+    request,
+    state.url,
+    state.timeout,
+    state.fetchOpt
+  );
   return (
     response.rpc_data?.map((el) => ({
       jsonrpc: '2.0',
@@ -268,6 +289,7 @@ export function provider(settings: ProviderSettings): RpcState {
     nextNonce: initNonce(),
     nextReqId: initNonce(),
     url: settings.url,
+    timeout: settings.timeout || 5000,
     network: settings.network || 'homestead',
   };
 }

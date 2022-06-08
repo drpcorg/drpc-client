@@ -15,12 +15,29 @@ describe('ethers provider', () => {
   it('requests block height', async () => {
     let provider = new DrpcProvider(initState());
     let result = await provider.getBlockNumber();
+    // @ts-ignore
     expect(result).toMatchInlineSnapshot(`1048577`);
+  });
+
+  it('timeouts', () => {
+    let provider = new DrpcProvider(
+      initState({
+        timeout: 100,
+        fetchOpt: () =>
+          (() => {
+            return new Promise(() => {});
+          }) as any,
+      })
+    );
+    return expect(provider.getBlockNumber()).rejects.toMatchInlineSnapshot(
+      `[Error: Request exceeded timeout of 100]`
+    );
   });
 
   it('requests block', async () => {
     let provider = new DrpcProvider(initState());
     let result = await provider.getBlock('0x100001');
+    // @ts-ignore
     expect(result).toMatchInlineSnapshot(`
 Object {
   "_difficulty": Object {
