@@ -36,6 +36,10 @@ export async function checkSignatures(
         return false;
       }
       const prepared = await prepareMessage(el, noncemap[el.id]);
+      // TODO: sign errors too
+      if (!el.ok) {
+        return true;
+      }
       if (!el.signature) {
         return false;
       }

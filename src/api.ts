@@ -251,11 +251,24 @@ export async function makeRequestMulti(
     state.fetchOpt
   );
   return (
-    response.rpc_data?.map((el) => ({
-      jsonrpc: '2.0',
-      id: el.id,
-      result: el.payload,
-    })) ?? []
+    response.rpc_data?.map((el) => {
+      if (el.ok) {
+        return {
+          jsonrpc: '2.0',
+          id: el.id,
+          result: el.payload,
+        };
+      } else {
+        return {
+          jsonrpc: '2.0',
+          id: el.id,
+          error: {
+            code: 0,
+            message: el.error,
+          },
+        };
+      }
+    }) ?? []
   );
 }
 

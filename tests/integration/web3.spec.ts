@@ -44,6 +44,12 @@ describe('web3 provider', () => {
     );
   });
 
+  it('returns data with error', async () => {
+    let provider = new DrpcProvider(initState());
+    let web3 = new Web3(provider);
+    return expect(web3.eth.getGasPrice()).rejects.toMatchInlineSnapshot(`[Error: Returned error: Call is not supported]`);
+  });
+
   it('requests block height', async () => {
     let provider = new DrpcProvider(initState());
     let web3 = new Web3(provider);

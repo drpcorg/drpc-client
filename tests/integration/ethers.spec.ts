@@ -34,6 +34,13 @@ describe('ethers provider', () => {
     );
   });
 
+  it('returns data with error', async () => {
+    let provider = new DrpcProvider(initState());
+    return expect(provider.getGasPrice()).rejects.toMatchInlineSnapshot(
+      `[Error: Call is not supported]`
+    );
+  });
+
   it('requests block', async () => {
     let provider = new DrpcProvider(initState());
     let result = await provider.getBlock('0x100001');

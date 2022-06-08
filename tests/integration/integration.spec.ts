@@ -47,6 +47,28 @@ Object {
     ).rejects.toMatchInlineSnapshot(`[Error: Request exceeded timeout of 100]`);
   });
 
+  it('returns data with error', () => {
+    return expect(
+      makeRequest(
+        {
+          method: 'eth_gasPrice',
+          params: [],
+        },
+
+        initState()
+      )
+    ).resolves.toMatchInlineSnapshot(`
+Object {
+  "error": Object {
+    "code": 0,
+    "message": "Call is not supported",
+  },
+  "id": "450359962737049540",
+  "jsonrpc": "2.0",
+}
+`);
+  });
+
   it('tests multi response', async () => {
     let res = await makeRequestMulti(
       [
