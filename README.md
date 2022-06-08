@@ -1,7 +1,7 @@
 # DRPC SDK
 
-Client-side library for working for DRPC. It's responsibility to communicte with DRPC and also check provided
-signatures for response data to validate data origin.
+Client-side library for working with DRPC (drpc.org). It's responsibility to communicte with DRPC and also check provided
+signatures for response data to validate data authenticity.
 
 ## Installation
 
