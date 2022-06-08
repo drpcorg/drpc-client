@@ -179,6 +179,13 @@ function reqid(state: RpcState) {
   return ++state.nextReqId;
 }
 
+/**
+ * Make JSON RPC batch request using state provided
+ *
+ * @param rpcs list of JSON RPC requests
+ * @param state current provider state
+ * @returns result of given RPC requests
+ */
 export async function makeRequestMulti(
   rpcs: JSONRpc[],
   state: RpcState,
@@ -199,11 +206,24 @@ export async function makeRequestMulti(
   return response.rpc_data?.map((el) => el.payload) ?? [];
 }
 
+/**
+ * Make JSON RPC request using state provided
+ *
+ * @param rpc JSON RPC requests
+ * @param state current provider state
+ * @returns result of given RPC request
+ */
 export async function makeRequest(rpc: JSONRpc, state: RpcState) {
   let responses = await makeRequestMulti([rpc], state);
   return responses[0];
 }
 
+/**
+ * Creates new state for drpc client
+ *
+ * @param settings DRPC client settings
+ * @returns
+ */
 export function provider(settings: ProviderSettings): RpcState {
   if (settings.provider_ids.length < (settings.provider_num || 1)) {
     throw new Error('Not enough provder_ids for provider_num');
@@ -220,6 +240,12 @@ export function provider(settings: ProviderSettings): RpcState {
   };
 }
 
+/**
+ *
+ * @param provider_num number of providers in consensus
+ * @param state current provider state
+ * @returns
+ */
 export function providerWithConsensus(
   provider_num: number,
   state: RpcState
