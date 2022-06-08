@@ -33,6 +33,23 @@ async function getBlockHeight() {
 
 [API Documentation](https://p2p-org.github.io/drpc-client/)
 
+### Using in browser
+
+This module is written to work in node and browser. Because of that, by default webpack and other bundlers will try
+to bundle node dependencies (like node-fetch, etc). However, if you use webpack you can just define constant and it will eliminate any
+non-browser code.
+
+```js
+{
+  // ....
+  plugins: [
+    new webpack.DefinePlugin({
+      __isBrowser__: 'true',
+    }),
+  ],
+};
+```
+
 ### Web3.js provider
 
 If you're using `web3.js`, drpc-sdk exposes the provider
