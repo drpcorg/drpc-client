@@ -12,7 +12,8 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "Node",
-    "paths": {}
+    "paths": {},
+    "outDir": "./build"
   },
   "include": ["./src/**/*.ts"]
 }

@@ -1,6 +1,6 @@
 {
   "name": "drpc-sdk",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "",
   "main": "build/api.js",
   "files": [
@@ -47,6 +47,7 @@
     "sinon": "^14.0.0",
     "ts-jest": "^28.0.4",
     "ts-loader": "^9.3.0",
+    "tsc-esm-fix": "^2.18.0",
     "typedoc": "^0.22.17",
     "url": "^0.11.0",
     "util": "^0.12.4",
