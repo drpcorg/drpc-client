@@ -7,11 +7,15 @@ import type {
   HTTPResponse,
 } from 'drpc-proxy';
 import { CheckerT, createCheckers } from 'ts-interface-checker';
-import suite from 'drpc-proxy/protocol-ti.cjs';
+import * as suite from 'drpc-proxy/protocol-ti.cjs';
 import { getFetch } from './getfetch';
 import { initNonce } from './utils';
 import { checkSignatures } from './signatures';
 
+// @ts-ignore
+delete suite.default;
+
+// @ts-ignore
 let { HTTPResponse } = createCheckers(suite) as {
   HTTPResponse: CheckerT<HTTPResponse>;
 };
