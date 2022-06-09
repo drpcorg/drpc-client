@@ -24,7 +24,7 @@ export function initPolly(name: string): Polly {
       persister: 'fs',
       persisterOptions: {
         fs: {
-          recordingsDir: path.join(__dirname, '__recordings__', 'node'),
+          recordingsDir: path.join('tests/__recordings__', 'node'),
         },
       },
     });

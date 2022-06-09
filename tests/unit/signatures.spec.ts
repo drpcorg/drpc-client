@@ -1,6 +1,18 @@
 import { ProviderResponse, Request as DrpcRequest } from 'drpc-proxy';
-import { checkSignatures } from '../../src/signatures';
-jest.mock('../../src/isocrypto/signatures');
+import { jest } from '@jest/globals';
+jest.unstable_mockModule('../../src/isocrypto/signatures', () => {
+  return {
+    checkSha256(
+      data: string,
+      signature: string,
+      publicKey: string
+    ): Promise<boolean> {
+      return Promise.resolve(true);
+    },
+  };
+});
+let { checkSignatures } = await import('../../src/signatures');
+
 describe('Signatures', () => {
   it('checks signed request', async () => {
     const providerResponses: ProviderResponse[] = [

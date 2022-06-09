@@ -1,11 +1,4 @@
-import {
-  ConsensusError,
-  JSONRpc,
-  makeRequestMulti,
-  provider,
-  RpcState,
-  validateResponse,
-} from '../../src/api';
+import type { JSONRpc, RpcState } from '../../src/api';
 import { expect, use } from 'chai';
 import chaip from 'chai-as-promised';
 use(chaip);
@@ -16,6 +9,22 @@ import {
   ProviderResponse,
   JSONRPCResponse,
 } from 'drpc-proxy';
+import { jest } from '@jest/globals';
+
+jest.unstable_mockModule('../../src/isocrypto/signatures', () => {
+  return {
+    checkSha256(
+      data: string,
+      signature: string,
+      publicKey: string
+    ): Promise<boolean> {
+      return Promise.resolve(true);
+    },
+  };
+});
+
+const { ConsensusError, makeRequestMulti, provider, validateResponse } =
+  await import('../../src/api');
 
 const default_request = {
   api_key: '',
@@ -270,7 +279,6 @@ const requestResponsePairs: {
   ],
 };
 
-jest.mock('../../src/isocrypto/signatures');
 describe('Drpc Api', () => {
   afterEach(() => {
     sinon.restore();
