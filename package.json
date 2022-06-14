@@ -1,17 +1,16 @@
 {
   "name": "drpc-sdk",
-  "version": "0.3.7",
+  "version": "0.3.9",
   "description": "",
   "main": "build/api.js",
   "files": [
-    "dist_cjs/**/*",
-    "dist_esm/**/*"
+    "dist/**/*"
   ],
   "exports": {
-    "import": "./dist_esm/api.js",
-    "require": "./dist_cjs/api.cjs"
+    "import": "./dist/esm/api.js",
+    "require": "./dist/cjs/api.cjs"
   },
-  "types": "./dist_esm/api.d.ts",
+  "types": "./dist/esm/api.d.ts",
   "type": "module",
   "keywords": [],
   "author": "",

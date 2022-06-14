@@ -5,7 +5,7 @@
     "baseUrl": "./src",
     "target": "es2020",
     "module": "es2020",
-    "outDir": "./dist_esm"
+    "outDir": "./dist/esm"
   },
   "include": ["./src/**/*.ts"]
 }

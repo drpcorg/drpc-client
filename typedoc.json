@@ -1,4 +1,5 @@
 {
   "entryPoints": ["src/api.ts"],
-  "out": "docs"
+  "out": "docs",
+  "tsconfig": "./tsconfig.esm.json"
 }

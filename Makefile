@@ -22,8 +22,8 @@ integration-browser:
 build: clean
 	echo "Building CJS module"
 	npx tsc -p tsconfig.cjs.json
-	for f in $$(find ./dist_cjs -name '*.js'); do mv "$$f" "$${f/.js/.cjs}"; done
-	npx tsc-esm-fix --target 'dist_cjs/**/*.cjs'
+	for f in $$(find ./dist/cjs -name '*.js'); do mv "$$f" "$${f/.js/.cjs}"; done
+	npx tsc-esm-fix --target 'dist/cjs/**/*.cjs'
 	echo "Building ESM module"
 	npx tsc -p tsconfig.esm.json
 	npx tsc-esm-fix --tsconfig tsconfig.esm.json
