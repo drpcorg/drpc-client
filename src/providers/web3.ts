@@ -1,4 +1,4 @@
-import { JSONRpc, makeRequestMulti, RpcState, id } from '../../src/api';
+import { JSONRpc, makeRequestMulti, RpcState, id } from '../api';
 import type { AbstractProvider } from 'web3-core';
 
 export class DrpcProvider implements AbstractProvider {

@@ -55,7 +55,9 @@ non-browser code.
 If you're using `web3.js`, drpc-sdk exposes the provider
 
 ```js
-import { DrpcProvider } from 'drpc-sdk/providers/web3';
+import { DrpcProvider } from 'drpc-sdk/dist/esm/providers/web3';
+// for cjs
+// import { DrpcProvider } from 'drpc-sdk/dist/cjs/providers/web3';
 
 async function getBlock(tag) {
   let state = provider({
@@ -76,7 +78,9 @@ async function getBlock(tag) {
 If you're using `ethers.js`, drpc-sdk exposes the provider
 
 ```js
-import { DrpcProvider } from 'drpc-sdk/providers/ethers';
+import { DrpcProvider } from 'drpc-sdk/dist/esm/providers/ethers';
+// for cjs
+// import { DrpcProvider } from 'drpc-sdk/dist/cjs/providers/ethers';
 
 async function getBlock(tag) {
   let state = provider({
