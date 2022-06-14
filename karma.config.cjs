@@ -73,7 +73,7 @@ module.exports = function (config) {
                 loader: 'ts-loader',
                 options: {
                   transpileOnly: true,
-                  configFile: 'tsconfig/tsconfig.esm.json',
+                  configFile: 'tsconfig.esm.json',
                 },
               },
             ],

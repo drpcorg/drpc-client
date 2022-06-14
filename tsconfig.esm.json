@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "baseUrl": "./src",
+    "target": "es2020",
+    "module": "es2020",
+    "outDir": "./dist_esm"
+  },
+  "include": ["./src/**/*.ts"]
+}

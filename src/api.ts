@@ -12,8 +12,10 @@ import { getFetch } from './getfetch';
 import { initNonce } from './utils';
 import { checkSignatures } from './signatures';
 
-// @ts-ignore
-let { HTTPResponse } = createCheckers(suite) as {
+let { HTTPResponse } = createCheckers(
+  // @ts-ignore
+  suite.default ? suite.default : suite
+) as {
   HTTPResponse: CheckerT<HTTPResponse>;
 };
 
@@ -195,10 +197,10 @@ async function execute(
   ]);
   clearTimeout(timeoutRef);
   let dresponse = await response.json();
-  if (!HTTPResponse.test(dresponse)) {
-    HTTPResponse.check(dresponse);
-    throw new Error('Impossible, statement above always throws');
-  }
+  // if (!HTTPResponse.test(dresponse)) {
+  //   HTTPResponse.check(dresponse);
+  //   throw new Error('Impossible, statement above always throws');
+  // }
   if (dresponse.error) {
     throw new Error(dresponse.error.message);
   }

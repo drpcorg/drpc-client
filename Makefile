@@ -21,14 +21,15 @@ integration-browser:
 
 build: clean
 	echo "Building CJS module"
-	npx tsc -p ./tsconfig/tsconfig.cjs.json
-	npx tsc-esm-fix --tsconfig ./tsconfig/tsconfig.cjs.json
+	npx tsc -p tsconfig.cjs.json
+	for f in $$(find ./dist_cjs -name '*.js'); do mv "$$f" "$${f/.js/.cjs}"; done
+	npx tsc-esm-fix --target 'dist_cjs/**/*.cjs'
 	echo "Building ESM module"
-	npx tsc -p ./tsconfig/tsconfig.esm.json
-	npx tsc-esm-fix --tsconfig ./tsconfig/tsconfig.esm.json
+	npx tsc -p tsconfig.esm.json
+	npx tsc-esm-fix --tsconfig tsconfig.esm.json
 
 clean:
-	rm -rf ./build
+	rm -rf ./dist_*
 
 run-publish: test integration-node integration-browser clean build
 	npm publish

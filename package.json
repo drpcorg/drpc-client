@@ -1,6 +1,6 @@
 {
   "name": "drpc-sdk",
-  "version": "0.3.0",
+  "version": "0.3.7",
   "description": "",
   "main": "build/api.js",
   "files": [
@@ -9,8 +9,9 @@
   ],
   "exports": {
     "import": "./dist_esm/api.js",
-    "require": "./dist_cjs/api.js"
+    "require": "./dist_cjs/api.cjs"
   },
+  "types": "./dist_esm/api.d.ts",
   "type": "module",
   "keywords": [],
   "author": "",
@@ -64,7 +65,7 @@
     "@ethersproject/providers": "^5.6.7",
     "@ethersproject/web": "^5.6.1",
     "crypto-js": "^4.1.1",
-    "drpc-proxy": "^0.2.8",
+    "drpc-proxy": "^0.3.0",
     "node-fetch": "2",
     "ts-interface-checker": "^1.0.2",
     "web3-core-helpers": "^1.7.3"
