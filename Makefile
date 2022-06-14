@@ -20,8 +20,12 @@ integration-browser:
 	npx karma start $(KARMA_CONFIG)
 
 build: clean
-	npx tsc -p ./tsconfig.json
-	npx tsc-esm-fix --tsconfig ./tsconfig.json
+	echo "Building CJS module"
+	npx tsc -p ./tsconfig/tsconfig.cjs.json
+	npx tsc-esm-fix --tsconfig ./tsconfig/tsconfig.cjs.json
+	echo "Building ESM module"
+	npx tsc -p ./tsconfig/tsconfig.esm.json
+	npx tsc-esm-fix --tsconfig ./tsconfig/tsconfig.esm.json
 
 clean:
 	rm -rf ./build
