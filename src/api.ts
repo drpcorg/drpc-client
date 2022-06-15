@@ -197,10 +197,10 @@ async function execute(
   ]);
   clearTimeout(timeoutRef);
   let dresponse = await response.json();
-  // if (!HTTPResponse.test(dresponse)) {
-  //   HTTPResponse.check(dresponse);
-  //   throw new Error('Impossible, statement above always throws');
-  // }
+  if (!HTTPResponse.test(dresponse)) {
+    HTTPResponse.check(dresponse);
+    throw new Error('Impossible, statement above always throws');
+  }
   if (dresponse.error) {
     throw new Error(dresponse.error.message);
   }
