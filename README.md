@@ -10,22 +10,33 @@ signatures for response data, validating data authenticity. Supports node and br
 ## Example
 
 ```js
-import { provider, makeRequest } from 'drpc-sdk';
+import { HTTPApi } from 'drpc-sdk';
 
 async function getBlockHeight() {
-  let state = provider({
+  let api = new HTTPApi({
     api_key: 'api key',
     url: 'https://drpc.org/api',
     provider_ids: ['test'],
     provider_num: 1,
   });
-  let blockheight = await makeRequest(
+
+  // single request
+  let blockheight = await api.call({
+    method: 'eth_blockNumber',
+    params: [],
+  });
+
+  // batch request
+  let batch = await api.callMulti([
     {
       method: 'eth_blockNumber',
       params: [],
     },
-    state
-  );
+    {
+      method: 'eth_getBlockByNumber',
+      params: ['0x100001'],
+    },
+  ]);
 }
 ```
 
