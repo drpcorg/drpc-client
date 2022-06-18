@@ -116,6 +116,11 @@ abstract class Api {
     return ++this.state.nextNonce;
   }
 
+  /**
+   * Generates id for JSON RPC requests
+   *
+   * @returns JSON RPC id
+   */
   id(): number {
     return ++this.state.nextId;
   }
