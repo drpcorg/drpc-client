@@ -112,7 +112,7 @@ abstract class Api {
     this.state = provider(settings);
   }
 
-  nonce(): number {
+  protected nonce(): number {
     return ++this.state.nextNonce;
   }
 
@@ -120,15 +120,27 @@ abstract class Api {
     return ++this.state.nextId;
   }
 
-  reqid(): number {
+  protected reqid(): number {
     return ++this.state.nextReqId;
   }
 
+  /**
+   * Single JSON rpc call
+   *
+   * @param rpc JSON RPC request
+   * @returns JSON RPC response
+   */
   async call(rpc: JSONRpc): Promise<any> {
     let resp = await this.callMulti([rpc]);
     return resp[0];
   }
 
+  /**
+   * Batch JSON RPC request
+   *
+   * @param rpcs JSON RPC requests
+   * @returns JSON RPC responses
+   */
   async callMulti(rpcs: JSONRpc[]): Promise<any[]> {
     let preqs = rpcs.map((rpc) =>
       createRequestItem(
@@ -180,9 +192,12 @@ abstract class Api {
     });
   }
 
-  abstract send(rpcs: DrpcRequest): Observable<ReplyItem>;
+  protected abstract send(rpcs: DrpcRequest): Observable<ReplyItem>;
 }
 
+/**
+ * HTTP API provider
+ */
 export class HTTPApi extends Api {
   private async execute(
     controller: AbortController,
@@ -207,7 +222,7 @@ export class HTTPApi extends Api {
     return dresponse.items;
   }
 
-  send(request: DrpcRequest): Observable<ReplyItem> {
+  protected send(request: DrpcRequest): Observable<ReplyItem> {
     let controller = new AbortController();
 
     return new Observable((observer) => {
