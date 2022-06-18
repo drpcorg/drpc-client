@@ -136,7 +136,7 @@ abstract class Api {
   }
 
   /**
-   * Batch JSON RPC request
+   * Batch JSON RPC call
    *
    * @param rpcs JSON RPC requests
    * @returns JSON RPC responses
