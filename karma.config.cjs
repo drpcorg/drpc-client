@@ -49,6 +49,7 @@ module.exports = function (config) {
           http: false,
           https: false,
           os: require.resolve('os-browserify'),
+          buffer: false,
         },
         extensions: ['.ts', '.js', '.cjs'],
       },
@@ -73,7 +74,7 @@ module.exports = function (config) {
                 loader: 'ts-loader',
                 options: {
                   transpileOnly: true,
-                  configFile: 'tsconfig.esm.json',
+                  configFile: 'tsconfig.json',
                 },
               },
             ],

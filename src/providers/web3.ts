@@ -1,10 +1,10 @@
-import { JSONRpc, makeRequestMulti, RpcState, id } from '../api';
+import { JSONRpc, HTTPApi, ProviderSettings } from '../api';
 import type { AbstractProvider } from 'web3-core';
 
 export class DrpcProvider implements AbstractProvider {
-  private state: RpcState;
-  constructor(state: RpcState) {
-    this.state = state;
+  readonly api: HTTPApi;
+  constructor(settings: ProviderSettings) {
+    this.api = new HTTPApi(settings);
   }
 
   async sendAsync(payload: any, callback: any) {
@@ -15,7 +15,7 @@ export class DrpcProvider implements AbstractProvider {
     }
     let ids: any = {};
     let rpcs: JSONRpc[] = payload.map((el: any) => {
-      let iid = id(this.state);
+      let iid = this.api.id();
       ids[iid] = el.id;
       return {
         method: el.method,
@@ -25,7 +25,7 @@ export class DrpcProvider implements AbstractProvider {
     });
 
     try {
-      let result = await makeRequestMulti(rpcs, this.state);
+      let result = await this.api.callMulti(rpcs);
       let mresult = result.map((el) => {
         el.id = ids[el.id];
         return el;

@@ -1,6 +1,6 @@
 import { DrpcProvider } from '../../src/providers/ethers';
 import { Polly } from '@pollyjs/core';
-import { initPolly, initState } from '../integration-init';
+import { initPolly, initState, wrapIdGen } from '../integration-init';
 
 let polly: Polly;
 describe('ethers provider', () => {
@@ -12,7 +12,7 @@ describe('ethers provider', () => {
   });
 
   it('requests block height', async () => {
-    let provider = new DrpcProvider(initState());
+    let provider = wrapIdGen(() => new DrpcProvider(initState()));
     let result = await provider.getBlockNumber();
     // @ts-ignore
     expect(result).toMatchInlineSnapshot(`1048577`);
@@ -22,26 +22,31 @@ describe('ethers provider', () => {
     let provider = new DrpcProvider(
       initState({
         timeout: 100,
-        fetchOpt: () =>
-          (() => {
-            return new Promise(() => {});
-          }) as any,
       })
     );
+    polly.server.post(provider.api.state.url).intercept(
+      () => {
+        return new Promise((res) => {
+          setTimeout(res, 200);
+        });
+      },
+      // @ts-ignore
+      { times: 1 }
+    );
     return expect(provider.getBlockNumber()).rejects.toMatchInlineSnapshot(
-      `[Error: Request exceeded timeout of 100]`
+      `[Error: Timeout: request took too long to complete]`
     );
   });
 
   it('returns data with error', async () => {
-    let provider = new DrpcProvider(initState());
+    let provider = wrapIdGen(() => new DrpcProvider(initState()));
     return expect(provider.getGasPrice()).rejects.toMatchInlineSnapshot(
       `[Error: Call is not supported]`
     );
   });
 
   it('requests block', async () => {
-    let provider = new DrpcProvider(initState());
+    let provider = wrapIdGen(() => new DrpcProvider(initState()));
     let result = await provider.getBlock('0x100001');
     // @ts-ignore
     expect(result).toMatchInlineSnapshot(`

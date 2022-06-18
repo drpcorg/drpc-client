@@ -5,7 +5,7 @@ export default {
   globals: {
     'ts-jest': {
       useESM: true,
-      tsConfig: './tsconfig.jest.json',
+      tsconfig: './tsconfig.jest.json',
     },
   },
 };

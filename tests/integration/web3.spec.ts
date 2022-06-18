@@ -1,6 +1,6 @@
 import { DrpcProvider } from '../../src/providers/web3';
 import { Polly } from '@pollyjs/core';
-import { initPolly, initState } from '../integration-init';
+import { initPolly, initState, wrapIdGen } from '../integration-init';
 import Web3 from 'web3';
 
 let polly: Polly;
@@ -32,20 +32,25 @@ describe('web3 provider', () => {
     let provider = new DrpcProvider(
       initState({
         timeout: 100,
-        fetchOpt: () =>
-          (() => {
-            return new Promise(() => {});
-          }) as any,
       })
+    );
+    polly.server.post(provider.api.state.url).intercept(
+      () => {
+        return new Promise((res) => {
+          setTimeout(res, 200);
+        });
+      },
+      // @ts-ignore
+      { times: 1 }
     );
     let web3 = new Web3(provider);
     return expect(web3.eth.getBlockNumber()).rejects.toMatchInlineSnapshot(
-      `[Error: Request exceeded timeout of 100]`
+      `[Error: Timeout: request took too long to complete]`
     );
   });
 
   it('returns data with error', async () => {
-    let provider = new DrpcProvider(initState());
+    let provider = wrapIdGen(() => new DrpcProvider(initState()));
     let web3 = new Web3(provider);
     return expect(web3.eth.getGasPrice()).rejects.toMatchInlineSnapshot(
       `[Error: Returned error: Call is not supported]`
@@ -53,7 +58,7 @@ describe('web3 provider', () => {
   });
 
   it('requests block height', async () => {
-    let provider = new DrpcProvider(initState());
+    let provider = wrapIdGen(() => new DrpcProvider(initState()));
     let web3 = new Web3(provider);
     let result = await web3.eth.getBlockNumber();
     // @ts-ignore
@@ -61,7 +66,7 @@ describe('web3 provider', () => {
   });
 
   it('requests block and block height', async () => {
-    let provider = new DrpcProvider(initState());
+    let provider = wrapIdGen(() => new DrpcProvider(initState()));
     let web3 = new Web3(provider);
     var batch = new web3.BatchRequest();
 

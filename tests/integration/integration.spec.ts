@@ -1,67 +1,75 @@
 import { Polly } from '@pollyjs/core';
-import { makeRequest, makeRequestMulti } from '../../src/api';
-import { initPolly, initState } from '../integration-init';
+import { HTTPApi } from '../../src/api';
+import { initPolly, initState, wrapIdGen } from '../integration-init';
 
 let polly: Polly;
-describe('Node js env', () => {
-  beforeAll(() => {
-    polly = initPolly('api');
-  });
-  afterAll(async () => {
-    await polly.stop();
-  });
+describe('API', () => {
+  describe('HTTP API', () => {
+    beforeAll(() => {
+      polly = initPolly('api');
+    });
+    afterAll(async () => {
+      await polly.stop();
+    });
 
-  it('tests single response', async () => {
-    let res = await makeRequest(
-      {
+    it('tests single response', async () => {
+      let api = wrapIdGen(
+        () =>
+          new HTTPApi(
+            initState({
+              provider_ids: ['test', 'test1'],
+              provider_num: 2,
+            })
+          )
+      );
+
+      let res = await api.call({
         method: 'eth_blockNumber',
         params: [],
-      },
-      initState({
-        provider_ids: ['test', 'test1'],
-        provider_num: 2,
-      })
-    );
-    // @ts-ignore
-    expect(res).toMatchInlineSnapshot(`
+      });
+
+      expect(res).toMatchInlineSnapshot(`
 Object {
   "id": "1",
   "jsonrpc": "2.0",
   "result": "0x100001",
 }
 `);
-  });
+    });
 
-  it('timeouts', () => {
-    return expect(
-      makeRequest(
-        {
+    it('timeouts', () => {
+      let settings = initState({
+        timeout: 100,
+      });
+      polly.server.post(settings.url).intercept(
+        (req, res) => {
+          return new Promise((res) => {
+            setTimeout(() => res(), 200);
+          });
+        },
+        // @ts-ignore
+        { times: 1 }
+      );
+      let api = wrapIdGen(() => new HTTPApi(settings));
+      return expect(
+        api.call({
           method: 'eth_blockNumber',
           params: [],
-        },
-
-        initState({
-          timeout: 100,
-          fetchOpt: () =>
-            (() => {
-              return new Promise(() => {});
-            }) as any,
         })
-      )
-    ).rejects.toMatchInlineSnapshot(`[Error: Request exceeded timeout of 100]`);
-  });
+      ).rejects.toMatchInlineSnapshot(
+        `[Error: Timeout: request took too long to complete]`
+      );
+    });
 
-  it('returns data with error', () => {
-    return expect(
-makeRequest(
-{
-  method: 'eth_gasPrice',
-  params: [] },
+    it('returns data with error', () => {
+      let api = wrapIdGen(() => new HTTPApi(initState()));
 
-
-initState())).
-
-resolves.toMatchInlineSnapshot(`
+      return expect(
+        api.call({
+          method: 'eth_gasPrice',
+          params: [],
+        })
+      ).resolves.toMatchInlineSnapshot(`
 Object {
   "error": Object {
     "code": 0,
@@ -71,11 +79,12 @@ Object {
   "jsonrpc": "2.0",
 }
 `);
-  });
+    });
 
-  it('tests multi response', async () => {
-    let res = await makeRequestMulti(
-      [
+    it('tests multi response', async () => {
+      let api = wrapIdGen(() => new HTTPApi(initState()));
+
+      let res = await api.callMulti([
         {
           method: 'eth_blockNumber',
           params: [],
@@ -84,11 +93,8 @@ Object {
           method: 'eth_getBlockByNumber',
           params: ['0x100001'],
         },
-      ],
-      initState()
-    );
-    // @ts-ignore
-    expect(res).toMatchInlineSnapshot(`
+      ]);
+      expect(res).toMatchInlineSnapshot(`
 Array [
   Object {
     "id": "1",
@@ -127,5 +133,6 @@ Array [
   },
 ]
 `);
+    });
   });
 });

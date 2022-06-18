@@ -1,17 +1,18 @@
 import { JsonRpcSigner, StaticJsonRpcProvider } from '@ethersproject/providers';
-import { RpcState, makeRequest } from '../api';
+import { ProviderSettings, HTTPApi } from '../api';
 import { Logger } from '@ethersproject/logger';
 
 const logger = new Logger('drpc 0.1');
 
 export class DrpcProvider extends StaticJsonRpcProvider {
-  readonly providerState: RpcState;
+  readonly api: HTTPApi;
 
-  constructor(state: RpcState) {
-    let network = state.network;
-    let connection = { url: state.url };
+  constructor(settings: ProviderSettings) {
+    let api = new HTTPApi(settings);
+    let network = api.state.network;
+    let connection = { url: api.state.url };
     super(connection, network);
-    this.providerState = state;
+    this.api = api;
   }
   send(method: string, params: Array<any>): Promise<any> {
     const request = {
@@ -34,13 +35,10 @@ export class DrpcProvider extends StaticJsonRpcProvider {
     if (cache && this._cache[method]) {
       return this._cache[method];
     }
-    const result = makeRequest(
-      {
-        method: method,
-        params: params,
-      },
-      this.providerState
-    );
+    const result = this.api.call({
+      method: method,
+      params: params,
+    });
 
     // Cache the fetch, but clear it on the next event loop
     if (cache) {

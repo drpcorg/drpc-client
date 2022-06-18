@@ -1,5 +1,5 @@
 test:
-	npx jest tests/unit/*.spec.ts
+	npx jest tests/unit/**/*.spec.ts
 
 RUN_INTEGRATIONS_NODE = npx jest tests/integration/*.spec.ts
 RUN_INTEGRATIONS_NODE_ARGS = --watch
@@ -25,8 +25,8 @@ build: clean
 	for f in $$(find ./dist/cjs -name '*.js'); do mv "$$f" "$${f/.js/.cjs}"; done
 	npx tsc-esm-fix --target 'dist/cjs/**/*.cjs'
 	echo "Building ESM module"
-	npx tsc -p tsconfig.esm.json
-	npx tsc-esm-fix --tsconfig tsconfig.esm.json
+	npx tsc -p tsconfig.json
+	npx tsc-esm-fix --tsconfig tsconfig.json
 
 clean:
 	rm -rf ./dist_*

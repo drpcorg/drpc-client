@@ -72,6 +72,7 @@
     "crypto-js": "^4.1.1",
     "drpc-proxy": "^0.3.0",
     "node-fetch": "2",
+    "observable-fns": "^0.6.1",
     "ts-interface-checker": "^1.0.2",
     "web3-core-helpers": "^1.7.3"
   }
