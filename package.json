@@ -1,6 +1,6 @@
 {
   "name": "drpc-sdk",
-  "version": "0.3.20",
+  "version": "1.0.0",
   "description": "",
   "main": "build/api.js",
   "files": [
