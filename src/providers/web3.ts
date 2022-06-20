@@ -1,12 +1,9 @@
-import { JSONRpc, HTTPApi, ProviderSettings } from '../api';
+import { JSONRpc, HTTPApi, WsApi, ProviderSettings } from '../api';
 import type { AbstractProvider } from 'web3-core';
 
-export class DrpcProvider implements AbstractProvider {
-  readonly api: HTTPApi;
-  constructor(settings: ProviderSettings) {
-    this.api = new HTTPApi(settings);
-  }
-
+abstract class DrpcProvider implements AbstractProvider {
+  protected abstract callApi(rpcs: JSONRpc[]): Promise<any[]>;
+  protected abstract id(): number;
   async sendAsync(payload: any, callback: any) {
     let batch = true;
     if (!(payload instanceof Array)) {
@@ -15,7 +12,7 @@ export class DrpcProvider implements AbstractProvider {
     }
     let ids: any = {};
     let rpcs: JSONRpc[] = payload.map((el: any) => {
-      let iid = this.api.id();
+      let iid = this.id();
       ids[iid] = el.id;
       return {
         method: el.method,
@@ -25,7 +22,7 @@ export class DrpcProvider implements AbstractProvider {
     });
 
     try {
-      let result = await this.api.callMulti(rpcs);
+      let result = await this.callApi(rpcs);
       let mresult = result.map((el) => {
         el.id = ids[el.id];
         return el;
@@ -43,5 +40,35 @@ export class DrpcProvider implements AbstractProvider {
   disconnect() {}
   supportsSubscriptions() {
     return false;
+  }
+}
+
+export class HttpDrpcProvider extends DrpcProvider {
+  readonly api: HTTPApi;
+  protected id() {
+    return this.api.id();
+  }
+  constructor(settings: ProviderSettings) {
+    super();
+    this.api = new HTTPApi(settings);
+  }
+
+  protected callApi(rpcs: JSONRpc[]): Promise<any[]> {
+    return this.api.callMulti(rpcs);
+  }
+}
+
+export class WsDrpcProvider extends DrpcProvider {
+  readonly api: WsApi;
+  protected id() {
+    return this.api.id();
+  }
+  constructor(settings: ProviderSettings) {
+    super();
+    this.api = new WsApi(settings);
+  }
+
+  protected callApi(rpcs: JSONRpc[]): Promise<any[]> {
+    return this.api.callMulti(rpcs);
   }
 }

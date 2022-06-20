@@ -66,7 +66,7 @@ non-browser code.
 If you're using `web3.js`, drpc-sdk exposes the provider
 
 ```js
-import { DrpcProvider } from 'drpc-sdk/dist/esm/providers/web3';
+import { HttpDrpcProvider } from 'drpc-sdk/dist/esm/providers/web3';
 // for cjs
 // import { DrpcProvider } from 'drpc-sdk/dist/cjs/providers/web3';
 
@@ -77,7 +77,8 @@ async function getBlock(tag) {
     provider_ids: ['test'],
     provider_num: 1,
   });
-  let provider = new DrpcProvider(state);
+  // or WsDrpcProvider for websockets
+  let provider = new HttpDrpcProvider(state);
   let web3 = new Web3(provider);
 
   let result = await web3.eth.getBlockNumber();
