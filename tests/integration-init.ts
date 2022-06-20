@@ -15,8 +15,8 @@ if (NodeAdapter.id) {
   Polly.register(RestPersister);
 }
 
-const PROXY_URL = 'http://localhost:8090/rpc';
-export function wrapIdGen(fn: any) {
+const PROXY_URL = 'http://localhost:8090';
+export function wrapIdGen<T>(fn: () => T): T {
   Sinon.stub(Math, 'random').returns(0);
   let r = fn();
   Sinon.restore();

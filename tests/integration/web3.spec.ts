@@ -34,7 +34,7 @@ describe('web3 provider', () => {
         timeout: 100,
       })
     );
-    polly.server.post(provider.api.state.url).intercept(
+    polly.server.post(provider.api.state.url + '/rpc').intercept(
       () => {
         return new Promise((res) => {
           setTimeout(res, 200);

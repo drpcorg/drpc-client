@@ -8,7 +8,14 @@ import type {
 import { CheckerT, createCheckers } from 'ts-interface-checker';
 import suite from 'drpc-proxy/protocol-ti';
 import { initNonce } from './utils';
-import { Observable, map } from 'observable-fns';
+import {
+  Observable,
+  map,
+  Subject,
+  filter,
+  unsubscribe,
+  Subscription,
+} from 'observable-fns';
 import nodefetch from 'node-fetch';
 import {
   requestFinalization,
@@ -18,12 +25,14 @@ import {
 import { checkSignatures } from './pipes/signatures';
 import { consensus } from './pipes/consensus';
 import { collect, shuffleArray } from './utils';
+import WS from 'websocket';
 
-let { HTTPResponse } = createCheckers(
+let checkers = createCheckers(
   // @ts-ignore
   suite.default ? suite.default : suite
 ) as {
   HTTPResponse: CheckerT<HTTPResponse>;
+  ReplyItem: CheckerT<ReplyItem>;
 };
 
 function getFetch(): typeof globalThis.fetch {
@@ -208,7 +217,7 @@ export class HTTPApi extends Api {
     controller: AbortController,
     request: DrpcRequest
   ): Promise<ReplyItem[]> {
-    let response = await getFetch()(this.state.url, {
+    let response = await getFetch()(`${this.state.url}/rpc`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -220,8 +229,8 @@ export class HTTPApi extends Api {
     });
 
     let dresponse = await response.json();
-    if (!HTTPResponse.test(dresponse)) {
-      HTTPResponse.check(dresponse);
+    if (!checkers.HTTPResponse.test(dresponse)) {
+      checkers.HTTPResponse.check(dresponse);
       throw new Error('Impossible, statement above always throws');
     }
     return dresponse.items;
@@ -241,5 +250,88 @@ export class HTTPApi extends Api {
         controller.abort();
       };
     });
+  }
+}
+
+export class WsApi extends Api {
+  private readonly wsconn: WS.w3cwebsocket;
+  private readonly outputStream: Subject<ReplyItem>;
+  private readonly inputStream: Subject<DrpcRequest>;
+  private readonly connected: Promise<void>;
+  private readonly closing: Promise<void>;
+
+  constructor(settings: ProviderSettings) {
+    super(settings);
+    this.outputStream = new Subject<ReplyItem>();
+    this.inputStream = new Subject<DrpcRequest>();
+
+    this.wsconn = new WS.w3cwebsocket(`${this.state.url}/ws`);
+    this.wsconn.onmessage = this.handleMessage.bind(this);
+
+    this.connected = new Promise(
+      (res, rej) =>
+        (this.wsconn.onopen = () => {
+          if (this.wsconn.readyState === this.wsconn.OPEN) {
+            res();
+          } else {
+            rej();
+          }
+        })
+    );
+
+    let sub = this.inputStream
+      .pipe(
+        map(async (el) => {
+          if (this.wsconn.readyState !== this.wsconn.OPEN) {
+            await this.connected;
+          }
+          return el;
+        })
+      )
+      .subscribe((r) => {
+        this.wsconn.send(JSON.stringify(r));
+      });
+
+    this.closing = new Promise((res, rej) => {
+      this.wsconn.onclose = (event: WS.ICloseEvent) => {
+        try {
+          if (!event.wasClean) {
+            this.outputStream.error(
+              new Error(
+                `Connection closed unexpectedly. Code: ${event.code}, reason: ${event.reason}`
+              )
+            );
+          }
+          this.outputStream.complete();
+          this.inputStream.complete();
+          unsubscribe(sub);
+        } catch (e) {
+          rej(e);
+        }
+        res();
+      };
+    });
+  }
+
+  async close(): Promise<void> {
+    this.wsconn.close();
+    await this.closing;
+  }
+
+  private handleMessage(message: WS.IMessageEvent) {
+    let data = JSON.parse(message.data as any);
+    if (!checkers.ReplyItem.test(data)) {
+      checkers.ReplyItem.check(data);
+      throw new Error('impossible');
+    }
+    this.outputStream.next(data);
+  }
+  protected send(request: DrpcRequest): Observable<ReplyItem> {
+    this.inputStream.next(request);
+    return this.outputStream.pipe(
+      filter((item) => {
+        return item.request_id === request.id;
+      })
+    );
   }
 }

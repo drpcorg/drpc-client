@@ -3,73 +3,72 @@ import { HTTPApi } from '../../src/api';
 import { initPolly, initState, wrapIdGen } from '../integration-init';
 
 let polly: Polly;
-describe('API', () => {
-  describe('HTTP API', () => {
-    beforeAll(() => {
-      polly = initPolly('api');
+describe('HTTP API', () => {
+  beforeAll(() => {
+    polly = initPolly('api');
+  });
+  afterAll(async () => {
+    await polly.stop();
+  });
+
+  it('tests single response', async () => {
+    let api = wrapIdGen(
+      () =>
+        new HTTPApi(
+          initState({
+            provider_ids: ['test', 'test1'],
+            provider_num: 2,
+          })
+        )
+    );
+
+    let res = await api.call({
+      method: 'eth_blockNumber',
+      params: [],
     });
-    afterAll(async () => {
-      await polly.stop();
-    });
 
-    it('tests single response', async () => {
-      let api = wrapIdGen(
-        () =>
-          new HTTPApi(
-            initState({
-              provider_ids: ['test', 'test1'],
-              provider_num: 2,
-            })
-          )
-      );
-
-      let res = await api.call({
-        method: 'eth_blockNumber',
-        params: [],
-      });
-
-      expect(res).toMatchInlineSnapshot(`
+    expect(res).toMatchInlineSnapshot(`
 Object {
   "id": "1",
   "jsonrpc": "2.0",
   "result": "0x100001",
 }
 `);
+  });
+
+  it('timeouts', () => {
+    let settings = initState({
+      timeout: 100,
     });
+    polly.server.post(settings.url + '/rpc').intercept(
+      (req, res) => {
+        return new Promise((res) => {
+          setTimeout(() => res(), 200);
+        });
+      },
+      // @ts-ignore
+      { times: 1 }
+    );
+    let api = wrapIdGen(() => new HTTPApi(settings));
+    return expect(
+      api.call({
+        method: 'eth_blockNumber',
+        params: [],
+      })
+    ).rejects.toMatchInlineSnapshot(
+      `[Error: Timeout: request took too long to complete]`
+    );
+  });
 
-    it('timeouts', () => {
-      let settings = initState({
-        timeout: 100,
-      });
-      polly.server.post(settings.url).intercept(
-        (req, res) => {
-          return new Promise((res) => {
-            setTimeout(() => res(), 200);
-          });
-        },
-        // @ts-ignore
-        { times: 1 }
-      );
-      let api = wrapIdGen(() => new HTTPApi(settings));
-      return expect(
-        api.call({
-          method: 'eth_blockNumber',
-          params: [],
-        })
-      ).rejects.toMatchInlineSnapshot(
-        `[Error: Timeout: request took too long to complete]`
-      );
-    });
+  it('returns data with error', () => {
+    let api = wrapIdGen(() => new HTTPApi(initState()));
 
-    it('returns data with error', () => {
-      let api = wrapIdGen(() => new HTTPApi(initState()));
-
-      return expect(
-        api.call({
-          method: 'eth_gasPrice',
-          params: [],
-        })
-      ).resolves.toMatchInlineSnapshot(`
+    return expect(
+      api.call({
+        method: 'eth_gasPrice',
+        params: [],
+      })
+    ).resolves.toMatchInlineSnapshot(`
 Object {
   "error": Object {
     "code": 0,
@@ -79,22 +78,22 @@ Object {
   "jsonrpc": "2.0",
 }
 `);
-    });
+  });
 
-    it('tests multi response', async () => {
-      let api = wrapIdGen(() => new HTTPApi(initState()));
+  it('tests multi response', async () => {
+    let api = wrapIdGen(() => new HTTPApi(initState()));
 
-      let res = await api.callMulti([
-        {
-          method: 'eth_blockNumber',
-          params: [],
-        },
-        {
-          method: 'eth_getBlockByNumber',
-          params: ['0x100001'],
-        },
-      ]);
-      expect(res).toMatchInlineSnapshot(`
+    let res = await api.callMulti([
+      {
+        method: 'eth_blockNumber',
+        params: [],
+      },
+      {
+        method: 'eth_getBlockByNumber',
+        params: ['0x100001'],
+      },
+    ]);
+    expect(res).toMatchInlineSnapshot(`
 Array [
   Object {
     "id": "1",
@@ -133,6 +132,5 @@ Array [
   },
 ]
 `);
-    });
   });
 });

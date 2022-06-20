@@ -37,6 +37,7 @@
     "@types/node": "^17.0.39",
     "@types/node-fetch": "^2.6.1",
     "@types/sinon": "^10.0.11",
+    "@types/websocket": "^1.0.5",
     "assert": "^2.0.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -74,6 +75,7 @@
     "node-fetch": "2",
     "observable-fns": "^0.6.1",
     "ts-interface-checker": "^1.0.2",
-    "web3-core-helpers": "^1.7.3"
+    "web3-core-helpers": "^1.7.3",
+    "websocket": "^1.0.34"
   }
 }
