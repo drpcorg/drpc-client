@@ -1,15 +1,23 @@
 import { WsApi } from '../../src/api';
 import { initState, wrapIdGen } from '../integration-init';
+import { WS } from 'jest-websocket-mock';
+import { WebSocket } from 'mock-socket';
+
+let fakeUrl = 'ws://localhost:1234';
 describe('Websocket API', () => {
+  afterEach(() => {
+    WS.clean();
+  });
+
   it('tests single response', async () => {
     let api = wrapIdGen(
       () => new WsApi(initState({ url: 'ws://localhost:8090' }))
     );
-    let res = await api.call({
+    let res = api.call({
       method: 'eth_blockNumber',
       params: [],
     });
-    expect(res).toMatchInlineSnapshot(`
+    expect(await res).toMatchInlineSnapshot(`
 Object {
   "id": "1",
   "jsonrpc": "2.0",
@@ -17,6 +25,56 @@ Object {
 }
 `);
     await api.close();
+  });
+
+  it('timeouts', async () => {
+    const server = new WS(fakeUrl + '/ws');
+    let api = wrapIdGen(
+      () =>
+        new WsApi(initState({ url: fakeUrl, timeout: 1000 }), WebSocket as any)
+    );
+    await server.connected;
+    return expect(
+      api.call({
+        method: 'eth_blockNumber',
+        params: [],
+      })
+    ).rejects.toMatchInlineSnapshot(
+      `[Error: Timeout: request took too long to complete]`
+    );
+  });
+
+  it('handles disconnect with error', async () => {
+    const server = new WS(fakeUrl + '/ws');
+    let api = wrapIdGen(
+      () => new WsApi(initState({ url: fakeUrl }), WebSocket as any)
+    );
+    await server.connected;
+    let result = api.call({
+      method: 'eth_blockNumber',
+      params: [],
+    });
+    server.error();
+    return expect(result).rejects.toMatchInlineSnapshot(
+      `[Error: Connection closed unexpectedly with error]`
+    );
+  });
+
+  it('handles close gracefuly', async () => {
+    const server = new WS(fakeUrl + '/ws');
+    let api = wrapIdGen(
+      () => new WsApi(initState({ url: fakeUrl }), WebSocket as any)
+    );
+    await server.connected;
+    let result = api.call({
+      method: 'eth_blockNumber',
+      params: [],
+    });
+    api.close();
+    await server.closed;
+    return expect(result).rejects.toMatchInlineSnapshot(
+      `[Error: Partial request results, not enough data received or errors happened]`
+    );
   });
 
   it('returns data with error', () => {

@@ -260,12 +260,16 @@ export class WsApi extends Api {
   private readonly connected: Promise<void>;
   private readonly closing: Promise<void>;
 
-  constructor(settings: ProviderSettings) {
+  constructor(
+    settings: ProviderSettings,
+    client: typeof WS.w3cwebsocket | undefined = undefined
+  ) {
     super(settings);
     this.outputStream = new Subject<ReplyItem>();
     this.inputStream = new Subject<DrpcRequest>();
+    let Client = client || WS.w3cwebsocket;
 
-    this.wsconn = new WS.w3cwebsocket(`${this.state.url}/ws`);
+    this.wsconn = new Client(`${this.state.url}/ws`);
     this.wsconn.onmessage = this.handleMessage.bind(this);
 
     this.connected = new Promise(
@@ -289,8 +293,15 @@ export class WsApi extends Api {
         })
       )
       .subscribe((r) => {
-        this.wsconn.send(JSON.stringify(r));
+        if (this.wsconn.readyState === this.wsconn.OPEN) {
+          this.wsconn.send(JSON.stringify(r));
+        }
       });
+    this.wsconn.onerror = () => {
+      this.outputStream.error(
+        new Error(`Connection closed unexpectedly with error`)
+      );
+    };
 
     this.closing = new Promise((res, rej) => {
       this.wsconn.onclose = (event: WS.ICloseEvent) => {
@@ -319,12 +330,14 @@ export class WsApi extends Api {
   }
 
   private handleMessage(message: WS.IMessageEvent) {
-    let data = JSON.parse(message.data as any);
-    if (!checkers.ReplyItem.test(data)) {
-      checkers.ReplyItem.check(data);
-      throw new Error('impossible');
-    }
-    this.outputStream.next(data);
+    try {
+      let data = JSON.parse(message.data as any);
+      if (!checkers.ReplyItem.test(data)) {
+        checkers.ReplyItem.check(data);
+        throw new Error('impossible');
+      }
+      this.outputStream.next(data);
+    } catch (e) {}
   }
   protected send(request: DrpcRequest): Observable<ReplyItem> {
     this.inputStream.next(request);

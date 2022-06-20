@@ -67,6 +67,8 @@ module.exports = function (config) {
           { test: /pollyjs\/persister-fs/, use: 'null-loader' },
           { test: /pollyjs\/adapter-node-http/, use: 'null-loader' },
           { test: /requireOrImportModule/, use: 'null-loader' },
+          { test: /testing-library\/react/, use: 'null-loader' },
+
           {
             test: /\.ts$/,
             use: [
