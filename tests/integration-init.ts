@@ -29,6 +29,7 @@ export function initPolly(name: string): Polly {
     polly = new Polly(name, {
       adapters: ['node-http'],
       persister: 'fs',
+      recordFailedRequests: true,
       matchRequestsBy: {
         method: true,
         headers: false,
@@ -44,6 +45,7 @@ export function initPolly(name: string): Polly {
   } else {
     polly = new Polly(name, {
       adapters: ['fetch'],
+      recordFailedRequests: true,
       persister: 'rest',
       matchRequestsBy: {
         method: true,

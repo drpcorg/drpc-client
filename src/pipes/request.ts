@@ -13,31 +13,29 @@ export function requestFinalization(request: DrpcRequest) {
     return new Observable<ReplyItem>((obs) => {
       let sub = items.subscribe({
         next(item) {
-          // Filter unexpected data
-          if (!expectedIds.has(item.id)) {
-            return;
-          }
-          if (!providers.has(item.provider_id)) {
-            return;
-          }
-
-          // check duplicates
-          let key = JSON.stringify([item.provider_id, item.id]);
-          if (requestsSeen.has(key)) {
-            return;
-          }
-          requestsSeen = requestsSeen.add(key);
-
           if (item.error) {
             switch (failureKindFromNumber(item.error.kind)) {
               case 'partial':
                 fulFilledProviders = fulFilledProviders.add(item.provider_id);
                 break;
               case 'total':
-                fulFilledProviders = new Set(request.provider_ids);
-                break;
+                obs.error(new Error(item.error.message));
+                return;
             }
           } else {
+            // Filter unexpected data
+            if (!expectedIds.has(item.id)) {
+              return;
+            }
+            if (!providers.has(item.provider_id)) {
+              return;
+            }
+            // check duplicates
+            let key = JSON.stringify([item.provider_id, item.id]);
+            if (requestsSeen.has(key)) {
+              return;
+            }
+            requestsSeen = requestsSeen.add(key);
             obs.next(item);
           }
 

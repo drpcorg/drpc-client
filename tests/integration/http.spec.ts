@@ -36,6 +36,27 @@ Object {
 `);
   });
 
+  it('returns error when incorrect api token', async () => {
+    let api = wrapIdGen(
+      () =>
+        new HTTPApi(
+          initState({
+            provider_ids: ['test', 'test1'],
+            provider_num: 2,
+            api_key: 'test',
+          })
+        )
+    );
+
+    let res = api.call({
+      method: 'eth_blockNumber',
+      params: [],
+    });
+    await expect(res).rejects.toMatchInlineSnapshot(
+      `[Error: Your token is invalid or expired]`
+    );
+  });
+
   it('timeouts', () => {
     let settings = initState({
       timeout: 100,

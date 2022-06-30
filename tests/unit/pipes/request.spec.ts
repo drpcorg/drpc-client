@@ -157,12 +157,12 @@ describe('Request', () => {
           },
         }),
       ];
-      let result = await collect(
+      let result = collect(
         new Observable((obs) => {
           data.forEach((item) => obs.next(item));
         }).pipe(requestFinalization(request))
       );
-      expect(result).toEqual([]);
+      expect(result).rejects.toMatchInlineSnapshot(`[Error: test]`);
     });
   });
 
