@@ -65,6 +65,7 @@ Object {
       () =>
         new WsApi(
           initState({
+            url: 'ws://localhost:8090',
             provider_ids: ['test', 'test1'],
             provider_num: 2,
             api_key: 'test',
