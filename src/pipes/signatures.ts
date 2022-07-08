@@ -33,6 +33,9 @@ export function checkSignatures(request: DrpcRequest) {
       return true;
     }
     if (!data.signature) {
+      console.warn(
+        `Response is not an error, but is not signed, this is probably a misconfiguration`
+      );
       return false;
     }
     if (!PUBLIC_KEYS[item.provider_id]) {
