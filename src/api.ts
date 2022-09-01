@@ -54,6 +54,7 @@ export type RpcState = {
   api_key: string;
   dontShuffle: boolean;
   skipSignatureCheck: boolean;
+  skipResponseDeepCheck: boolean;
 };
 
 /**
@@ -68,6 +69,7 @@ export type ProviderSettings = {
   network?: string;
   dontShuffle?: boolean;
   skipSignatureCheck?: boolean;
+  skipResponseDeepCheck?: boolean;
 };
 
 /**
@@ -109,7 +111,8 @@ function provider(settings: ProviderSettings): RpcState {
     timeout: settings.timeout || 5000,
     network: settings.network || 'homestead',
     dontShuffle: !!settings.dontShuffle,
-    skipSignatureCheck: settings.skipSignatureCheck!!,
+    skipSignatureCheck: !!settings.skipSignatureCheck,
+    skipResponseDeepCheck: !!settings.skipResponseDeepCheck,
   };
 }
 
@@ -233,11 +236,15 @@ export class HTTPApi extends Api {
     });
 
     let dresponse = await response.json();
-    if (!checkers.HTTPResponse.test(dresponse)) {
-      checkers.HTTPResponse.check(dresponse);
-      throw new Error('Impossible, statement above always throws');
+    if (!this.state.skipResponseDeepCheck) {
+      if (!checkers.HTTPResponse.test(dresponse)) {
+        checkers.HTTPResponse.check(dresponse);
+        throw new Error('Impossible, statement above always throws');
+      }
+      return dresponse.items;
+    } else {
+      return dresponse.items;
     }
-    return dresponse.items;
   }
 
   protected send(request: DrpcRequest): Observable<ReplyItem> {
