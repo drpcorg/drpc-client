@@ -1,6 +1,7 @@
 import { Polly } from '@pollyjs/core';
 import { HTTPApi } from '../../src/api';
 import { initPolly, initState, wrapIdGen } from '../integration-init';
+import PUBLIC_KEYS from '../../src/keys';
 
 let polly: Polly;
 describe('HTTP API', () => {
@@ -97,6 +98,65 @@ Object {
   },
   "id": "1",
   "jsonrpc": "2.0",
+}
+`);
+  });
+
+  it('returns error if response is signed incorrectly', () => {
+    let api = wrapIdGen(
+      () =>
+        new HTTPApi(
+          initState({
+            provider_ids: ['test', 'test1'],
+            provider_num: 2,
+          })
+        )
+    );
+    let oldKeys = PUBLIC_KEYS['test'];
+    PUBLIC_KEYS['test'] = PUBLIC_KEYS['p2p-01'];
+
+    let res = api
+      .call({
+        method: 'eth_blockNumber',
+        params: [],
+      })
+      .finally(() => {
+        PUBLIC_KEYS['test'] = oldKeys;
+      });
+
+    return expect(res).rejects.toMatchInlineSnapshot(
+      `[Error: Consensus failure: Unable to reach consensus, response is not trustworthy]`
+    );
+  });
+
+  it('not returns error if response is signed incorrectly, but skipSignatureCheck set', () => {
+    let api = wrapIdGen(
+      () =>
+        new HTTPApi(
+          initState({
+            provider_ids: ['test', 'test1'],
+            provider_num: 2,
+            skipSignatureCheck: true,
+          })
+        )
+    );
+    let oldKeys = PUBLIC_KEYS['test'];
+    PUBLIC_KEYS['test'] = PUBLIC_KEYS['p2p-01'];
+
+    let res = api
+      .call({
+        method: 'eth_blockNumber',
+        params: [],
+      })
+      .finally(() => {
+        PUBLIC_KEYS['test'] = oldKeys;
+      });
+
+    return expect(res).resolves.toMatchInlineSnapshot(`
+Object {
+  "id": "1",
+  "jsonrpc": "2.0",
+  "result": "0x100001",
 }
 `);
   });

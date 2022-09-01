@@ -53,6 +53,7 @@ export type RpcState = {
   network: string;
   api_key: string;
   dontShuffle: boolean;
+  skipSignatureCheck: boolean;
 };
 
 /**
@@ -66,6 +67,7 @@ export type ProviderSettings = {
   api_key: string;
   network?: string;
   dontShuffle?: boolean;
+  skipSignatureCheck?: boolean;
 };
 
 /**
@@ -107,6 +109,7 @@ function provider(settings: ProviderSettings): RpcState {
     timeout: settings.timeout || 5000,
     network: settings.network || 'homestead',
     dontShuffle: !!settings.dontShuffle,
+    skipSignatureCheck: settings.skipSignatureCheck!!,
   };
 }
 
@@ -175,11 +178,12 @@ abstract class Api {
     };
 
     let items = await collect(
-      // TODO: timeouts
       this.send(request).pipe(
         requestFinalization(request),
         requestTimeout(this.state.timeout, 'request took too long to complete'),
-        checkSignatures(request),
+        this.state.skipSignatureCheck
+          ? filter(() => true)
+          : checkSignatures(request),
         map((item) => item.result as JSONRPCResponse),
         consensus(request.provider_ids.length),
         requestCompletness(request)
