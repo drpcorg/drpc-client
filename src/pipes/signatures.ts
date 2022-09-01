@@ -34,7 +34,8 @@ export function checkSignatures(request: DrpcRequest) {
     }
     if (!data.signature) {
       console.warn(
-        `Response is not an error, but is not signed, this is probably a misconfiguration`
+        `Response is not an error, but is not signed, this is probably a misconfiguration`,
+        data
       );
       return false;
     }
