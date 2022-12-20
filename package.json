@@ -72,7 +72,7 @@
     "@ethersproject/providers": "^5.6.7",
     "@ethersproject/web": "^5.6.1",
     "crypto-js": "^4.1.1",
-    "drpc-proxy": "^1.0.0",
+    "drpc-proxy": "^1.1.0",
     "node-fetch": "2",
     "observable-fns": "^0.6.1",
     "ts-interface-checker": "^1.0.2",

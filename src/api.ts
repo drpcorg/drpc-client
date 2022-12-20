@@ -52,6 +52,7 @@ export type RpcState = {
   provider_num: number;
   network: string;
   api_key: string;
+  dkey: string;
   dontShuffle: boolean;
   skipSignatureCheck: boolean;
   skipResponseDeepCheck: boolean;
@@ -66,6 +67,7 @@ export type ProviderSettings = {
   provider_num?: number;
   timeout?: number;
   api_key: string;
+  dkey: string;
   network?: string;
   dontShuffle?: boolean;
   skipSignatureCheck?: boolean;
@@ -108,6 +110,7 @@ function provider(settings: ProviderSettings): RpcState {
     nextNonce: initNonce(),
     nextReqId: initNonce(),
     url: settings.url,
+    dkey: settings.dkey,
     timeout: settings.timeout || 5000,
     network: settings.network || 'homestead',
     dontShuffle: !!settings.dontShuffle,
@@ -177,6 +180,7 @@ abstract class Api {
         : selectProviders(this.state),
       rpc: preqs,
       api_key: this.state.api_key,
+      dkey: this.state.dkey,
       network: this.state.network,
     };
 
