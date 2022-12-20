@@ -10,6 +10,8 @@ import {
 } from '../../src/isocrypto/util';
 
 let privKey: CryptoKey;
+var testKey =
+  '04b90fb62312ffdc6586d94736fb31abbb5fc1c2bcd26191417a2ca48657651b6c360d783f15a76d02a079934ae38e16e93e248fa9a5634488b0ddcd73a5bbdf3f';
 
 beforeAll(async () => {
   const crypto = await getcrypto();
@@ -35,7 +37,7 @@ describe('isocrypto', () => {
       await checkSha256(
         data,
         '3044022100d89722ff91cf05ef60eb54d2d61c5ed03a256f49241531640d1da19776863fa9021f516afbc8c6bc19fc975e3636cac5349955ffdb49df27eda74aa43a3d8a4bed',
-        KEYS['test']
+        testKey
       )
     ).toBeTruthy();
   });
@@ -68,7 +70,7 @@ describe('isocrypto', () => {
       stringToArrayBuffer(data)
     );
     expect(
-      await checkSha256(data, arrayBufferToHex(sig), KEYS['test'])
+      await checkSha256(data, arrayBufferToHex(sig), testKey)
     ).toBeTruthy();
   });
 });

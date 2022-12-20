@@ -17,6 +17,7 @@ jest.unstable_mockModule('../../../src/isocrypto/signatures', () => {
 let { checkSignatures } = await import('../../../src/pipes/signatures');
 const request: DrpcRequest = {
   id: '450359962737049540',
+  dkey: '',
   provider_ids: ['test'],
   rpc: [
     {
@@ -47,6 +48,7 @@ describe('Signatures', () => {
           id: '450359962737049540',
           upstream_id: 'test-2',
           error: '',
+          errorCode: 0,
           ok: true,
         },
       },
@@ -71,6 +73,7 @@ describe('Signatures', () => {
           nonce: 450359962737049540,
           id: '450359962737049540',
           upstream_id: 'test-2',
+          errorCode: 0,
           error: '',
           ok: true,
         },
@@ -95,6 +98,7 @@ describe('Signatures', () => {
           nonce: 0,
           id: '450359962737049540',
           upstream_id: 'test-2',
+          errorCode: 0,
           error: '',
           ok: true,
         },
@@ -119,6 +123,7 @@ describe('Signatures', () => {
           nonce: 0,
           id: '450359962737049540',
           upstream_id: 'test-2',
+          errorCode: 0,
           error: 'Some error',
           ok: false,
         },

@@ -49,7 +49,8 @@ export type RpcState = {
   timeout: number;
   nextReqId: number;
   provider_ids: string[];
-  provider_num: number;
+  quorum_from: number;
+  quorum_of: number;
   network: string;
   api_key: string;
   dkey: string;
@@ -64,7 +65,8 @@ export type RpcState = {
 export type ProviderSettings = {
   url: string;
   provider_ids: string[];
-  provider_num?: number;
+  quorum_from?: number;
+  quorum_of?: number;
   timeout?: number;
   api_key: string;
   dkey: string;
@@ -99,13 +101,11 @@ function createRequestItem(
 }
 
 function provider(settings: ProviderSettings): RpcState {
-  if (settings.provider_ids.length < (settings.provider_num || 1)) {
-    throw new Error('Not enough provder_ids for provider_num');
-  }
   return {
     api_key: settings.api_key,
     provider_ids: settings.provider_ids,
-    provider_num: settings.provider_num || 1,
+    quorum_from: settings.quorum_from || settings.quorum_of || 1,
+    quorum_of: settings.quorum_of || settings.quorum_from || 1,
     nextId: initNonce(),
     nextNonce: initNonce(),
     nextReqId: initNonce(),
@@ -117,10 +117,6 @@ function provider(settings: ProviderSettings): RpcState {
     skipSignatureCheck: !!settings.skipSignatureCheck,
     skipResponseDeepCheck: !!settings.skipResponseDeepCheck,
   };
-}
-
-function selectProviders(state: RpcState): string[] {
-  return shuffleArray(state.provider_ids).slice(0, state.provider_num);
 }
 
 abstract class Api {
@@ -175,9 +171,8 @@ abstract class Api {
     );
     const request: DrpcRequest = {
       id: this.reqid().toString(),
-      provider_ids: this.state.dontShuffle
-        ? this.state.provider_ids
-        : selectProviders(this.state),
+      provider_ids: this.state.provider_ids,
+      quorum: this.state.quorum_from,
       rpc: preqs,
       api_key: this.state.api_key,
       dkey: this.state.dkey,
@@ -192,7 +187,7 @@ abstract class Api {
           ? filter(() => true)
           : checkSignatures(request),
         map((item) => item.result as JSONRPCResponse),
-        consensus(request.provider_ids.length),
+        consensus(this.state.quorum_of),
         requestCompletness(request)
       )
     );

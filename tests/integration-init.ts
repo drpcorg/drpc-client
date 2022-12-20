@@ -63,11 +63,11 @@ export function initPolly(name: string): Polly {
 
 export function initState(pstate: Partial<RpcState> = {}) {
   let state: ProviderSettings = {
+    dkey: '',
     api_key:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiJwZXJmIiwidG9rZW5faWQiOiJwZXJmIiwiaWF0IjoxNjYyMDQ0ODYxLCJleHAiOjE2NzA2ODQ4NjF9.18SFUoMhVJAIpLhit3mF4hfvZlfCp3ap-gObatvyXMw',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiJ0ZXN0IiwidG9rZW5faWQiOiJ0ZXN0IiwiaWF0IjoxNjY5NzI2MTExLCJleHAiOjE2NzgzNjYxMTF9.FzhvsskO2_ay-5vsLTy3qpEBu7--gz89NgUX4lMMk7I',
     url: PROXY_URL,
     provider_ids: ['test'],
-    provider_num: 1,
     dontShuffle: true,
   };
   return { ...state, ...pstate };
