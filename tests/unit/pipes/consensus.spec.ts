@@ -11,6 +11,7 @@ const defaultResponse = {
   id: '1',
   upstream_id: 'test-2',
   error: '',
+  errorCode: 0,
   ok: true,
 };
 

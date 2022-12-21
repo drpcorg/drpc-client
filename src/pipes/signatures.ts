@@ -24,7 +24,7 @@ export function checkSignatures(request: DrpcRequest) {
     if (!data) {
       throw new Error("Can't check signatures on failure");
     }
-    if (!noncemap[item.id]) {
+    if (!item.id || !noncemap[item.id]) {
       return false;
     }
     const prepared = await prepareMessage(data, noncemap[data.id]);

@@ -24,7 +24,7 @@ export function requestFinalization(request: DrpcRequest) {
             }
           } else {
             // Filter unexpected data
-            if (!expectedIds.has(item.id)) {
+            if (!item.id || !expectedIds.has(item.id)) {
               return;
             }
             if (!providers.has(item.provider_id)) {

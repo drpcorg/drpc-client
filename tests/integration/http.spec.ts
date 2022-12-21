@@ -18,13 +18,13 @@ describe('HTTP API', () => {
         new HTTPApi(
           initState({
             provider_ids: ['test', 'test1'],
-            provider_num: 2,
+            quorum_of: 2,
           })
         )
     );
 
     let res = await api.call({
-      method: 'eth_blockNumber',
+      method: 'eth_chainId',
       params: [],
     });
 
@@ -32,7 +32,7 @@ describe('HTTP API', () => {
 Object {
   "id": "1",
   "jsonrpc": "2.0",
-  "result": "0x100001",
+  "result": "0x1",
 }
 `);
   });
@@ -43,14 +43,14 @@ Object {
         new HTTPApi(
           initState({
             provider_ids: ['test', 'test1'],
-            provider_num: 2,
+            quorum_of: 2,
             api_key: 'test',
           })
         )
     );
 
     let res = api.call({
-      method: 'eth_blockNumber',
+      method: 'eth_chainId',
       params: [],
     });
     await expect(res).rejects.toMatchInlineSnapshot(
@@ -74,7 +74,7 @@ Object {
     let api = wrapIdGen(() => new HTTPApi(settings));
     return expect(
       api.call({
-        method: 'eth_blockNumber',
+        method: 'eth_chainId',
         params: [],
       })
     ).rejects.toMatchInlineSnapshot(
@@ -87,14 +87,14 @@ Object {
 
     return expect(
       api.call({
-        method: 'eth_gasPrice',
+        method: 'test_test',
         params: [],
       })
     ).resolves.toMatchInlineSnapshot(`
 Object {
   "error": Object {
     "code": 0,
-    "message": "Call is not supported",
+    "message": "The method test_test does not exist/is not available",
   },
   "id": "1",
   "jsonrpc": "2.0",
@@ -108,7 +108,7 @@ Object {
         new HTTPApi(
           initState({
             provider_ids: ['test', 'test1'],
-            provider_num: 2,
+            quorum_of: 2,
           })
         )
     );
@@ -117,7 +117,7 @@ Object {
 
     let res = api
       .call({
-        method: 'eth_blockNumber',
+        method: 'eth_chainId',
         params: [],
       })
       .finally(() => {
@@ -135,7 +135,7 @@ Object {
         new HTTPApi(
           initState({
             provider_ids: ['test', 'test1'],
-            provider_num: 2,
+            quorum_of: 2,
             skipSignatureCheck: true,
           })
         )
@@ -145,7 +145,7 @@ Object {
 
     let res = api
       .call({
-        method: 'eth_blockNumber',
+        method: 'eth_chainId',
         params: [],
       })
       .finally(() => {
@@ -156,7 +156,7 @@ Object {
 Object {
   "id": "1",
   "jsonrpc": "2.0",
-  "result": "0x100001",
+  "result": "0x1",
 }
 `);
   });
@@ -166,12 +166,12 @@ Object {
 
     let res = await api.callMulti([
       {
-        method: 'eth_blockNumber',
+        method: 'eth_chainId',
         params: [],
       },
       {
         method: 'eth_getBlockByNumber',
-        params: ['0x100001'],
+        params: ['0x0', false],
       },
     ]);
     expect(res).toMatchInlineSnapshot(`
@@ -179,35 +179,31 @@ Array [
   Object {
     "id": "1",
     "jsonrpc": "2.0",
-    "result": "0x100001",
+    "result": "0x1",
   },
   Object {
     "id": "2",
     "jsonrpc": "2.0",
     "result": Object {
-      "difficulty": "0xc6ba1fe7c49",
-      "extraData": "0xd783010400844765746887676f312e352e31856c696e7578",
-      "gasLimit": "0x2fefd8",
-      "gasUsed": "0xa410",
-      "hash": "0x18c68d9ba58772a4409d65d61891b25db03a105a7769ae08ef2cff697921b446",
+      "difficulty": "0x400000000",
+      "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+      "gasLimit": "0x1388",
+      "gasUsed": "0x0",
+      "hash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
       "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      "miner": "0x0c729be7c39543c3d549282a40395299d987cec2",
-      "mixHash": "0xf8679fe0f04d5aad4844694cc8fb1a1b97482a5822658379c9bb8633f91daf97",
-      "nonce": "0x347a267c0ec88618",
-      "number": "0x100001",
-      "parentHash": "0x9a834c53bbee9c2665a5a84789a1d1ad73750b2d77b50de44f457f411d02e52e",
-      "receiptsRoot": "0x4f4ed1139baadbd4506d6b0c330335d2108715095fb93fd282bd69aa9edc09eb",
+      "miner": "0x0000000000000000000000000000000000000000",
+      "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "nonce": "0x0000000000000042",
+      "number": "0x0",
+      "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
       "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
-      "size": "0x304",
-      "stateRoot": "0xee13382462fcd5748a403ca131c38e871fa7206bca2b962f67b59e800741daa3",
-      "testFoo": "bar",
-      "timestamp": "0x56cc7b8c",
-      "totalDifficulty": "0x6baba0399a0f2e73",
-      "transactions": Array [
-        "0x146b8f4b6300c73bb7476359b9f1c5ee3f686a86b2aa673552cf0f9de9a42e77",
-        "0xe589a39acea3091b584b650158d08b159aa07e97b8e8cddb8f81cb606e13382e",
-      ],
-      "transactionsRoot": "0xc90078e2af52aef81815cb2a71c22ebd781dd658dd953d9df57f7769a0b2fe51",
+      "size": "0x21c",
+      "stateRoot": "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+      "timestamp": "0x0",
+      "totalDifficulty": "0x400000000",
+      "transactions": Array [],
+      "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
       "uncles": Array [],
     },
   },

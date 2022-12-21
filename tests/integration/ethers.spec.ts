@@ -13,9 +13,9 @@ describe('ethers provider', () => {
 
   it('requests block height', async () => {
     let provider = wrapIdGen(() => new DrpcProvider(initState()));
-    let result = await provider.getBlockNumber();
+    let result = await provider.getNetwork();
     // @ts-ignore
-    expect(result).toMatchInlineSnapshot(`1048577`);
+    expect(result.chainId).toMatchInlineSnapshot(`1`);
   });
 
   it('timeouts', () => {
@@ -38,43 +38,33 @@ describe('ethers provider', () => {
     );
   });
 
-  it('returns data with error', async () => {
-    let provider = wrapIdGen(() => new DrpcProvider(initState()));
-    return expect(provider.getGasPrice()).rejects.toMatchInlineSnapshot(
-      `[Error: Call is not supported]`
-    );
-  });
-
   it('requests block', async () => {
     let provider = wrapIdGen(() => new DrpcProvider(initState()));
-    let result = await provider.getBlock('0x100001');
+    let result = await provider.getBlock('0x0');
     // @ts-ignore
     expect(result).toMatchInlineSnapshot(`
 Object {
   "_difficulty": Object {
-    "hex": "0x0c6ba1fe7c49",
+    "hex": "0x0400000000",
     "type": "BigNumber",
   },
-  "difficulty": 13656418843721,
-  "extraData": "0xd783010400844765746887676f312e352e31856c696e7578",
+  "difficulty": 17179869184,
+  "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
   "gasLimit": Object {
-    "hex": "0x2fefd8",
+    "hex": "0x1388",
     "type": "BigNumber",
   },
   "gasUsed": Object {
-    "hex": "0xa410",
+    "hex": "0x00",
     "type": "BigNumber",
   },
-  "hash": "0x18c68d9ba58772a4409d65d61891b25db03a105a7769ae08ef2cff697921b446",
-  "miner": "0x0C729BE7c39543C3D549282A40395299d987cEc2",
-  "nonce": "0x347a267c0ec88618",
-  "number": 1048577,
-  "parentHash": "0x9a834c53bbee9c2665a5a84789a1d1ad73750b2d77b50de44f457f411d02e52e",
-  "timestamp": 1456241548,
-  "transactions": Array [
-    "0x146b8f4b6300c73bb7476359b9f1c5ee3f686a86b2aa673552cf0f9de9a42e77",
-    "0xe589a39acea3091b584b650158d08b159aa07e97b8e8cddb8f81cb606e13382e",
-  ],
+  "hash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+  "miner": "0x0000000000000000000000000000000000000000",
+  "nonce": "0x0000000000000042",
+  "number": 0,
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "timestamp": 0,
+  "transactions": Array [],
 }
 `);
   });

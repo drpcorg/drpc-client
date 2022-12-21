@@ -49,20 +49,12 @@ describe('web3 provider', () => {
     );
   });
 
-  it('returns data with error', async () => {
-    let provider = wrapIdGen(() => new HttpDrpcProvider(initState()));
-    let web3 = new Web3(provider);
-    return expect(web3.eth.getGasPrice()).rejects.toMatchInlineSnapshot(
-      `[Error: Returned error: Call is not supported]`
-    );
-  });
-
   it('requests block height', async () => {
     let provider = wrapIdGen(() => new HttpDrpcProvider(initState()));
     let web3 = new Web3(provider);
-    let result = await web3.eth.getBlockNumber();
+    let result = await web3.eth.getChainId();
     // @ts-ignore
-    expect(result).toMatchInlineSnapshot(`1048577`);
+    expect(result).toMatchInlineSnapshot(`1`);
   });
 
   it('requests block and block height', async () => {
@@ -73,34 +65,30 @@ describe('web3 provider', () => {
     let [blockp, blockpres, blockprej] = createCallbackPromise();
     batch.add(
       //@ts-ignore
-      web3.eth.getBlock.request(0x100001, (error, result) => {
+      web3.eth.getBlock.request(0x0, (error, result) => {
         try {
           // @ts-ignore
           expect(result).toMatchInlineSnapshot(`
 Object {
-  "difficulty": "13656418843721",
-  "extraData": "0xd783010400844765746887676f312e352e31856c696e7578",
-  "gasLimit": 3141592,
-  "gasUsed": 42000,
-  "hash": "0x18c68d9ba58772a4409d65d61891b25db03a105a7769ae08ef2cff697921b446",
+  "difficulty": "17179869184",
+  "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+  "gasLimit": 5000,
+  "gasUsed": 0,
+  "hash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
   "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-  "miner": "0x0C729BE7c39543C3D549282A40395299d987cEc2",
-  "mixHash": "0xf8679fe0f04d5aad4844694cc8fb1a1b97482a5822658379c9bb8633f91daf97",
-  "nonce": "0x347a267c0ec88618",
-  "number": 1048577,
-  "parentHash": "0x9a834c53bbee9c2665a5a84789a1d1ad73750b2d77b50de44f457f411d02e52e",
-  "receiptsRoot": "0x4f4ed1139baadbd4506d6b0c330335d2108715095fb93fd282bd69aa9edc09eb",
+  "miner": "0x0000000000000000000000000000000000000000",
+  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "nonce": "0x0000000000000042",
+  "number": 0,
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
   "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
-  "size": 772,
-  "stateRoot": "0xee13382462fcd5748a403ca131c38e871fa7206bca2b962f67b59e800741daa3",
-  "testFoo": "bar",
-  "timestamp": 1456241548,
-  "totalDifficulty": "7758470952334077555",
-  "transactions": Array [
-    "0x146b8f4b6300c73bb7476359b9f1c5ee3f686a86b2aa673552cf0f9de9a42e77",
-    "0xe589a39acea3091b584b650158d08b159aa07e97b8e8cddb8f81cb606e13382e",
-  ],
-  "transactionsRoot": "0xc90078e2af52aef81815cb2a71c22ebd781dd658dd953d9df57f7769a0b2fe51",
+  "size": 540,
+  "stateRoot": "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+  "timestamp": 0,
+  "totalDifficulty": "17179869184",
+  "transactions": Array [],
+  "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
   "uncles": Array [],
 }
 `);
@@ -114,10 +102,10 @@ Object {
     let [blocknump, blocknumpres, blocknumprej] = createCallbackPromise();
     batch.add(
       //@ts-ignore
-      web3.eth.getBlockNumber.request((error, result) => {
+      web3.eth.getChainId.request((error, result) => {
         try {
           // @ts-ignore
-          expect(result).toMatchInlineSnapshot(`1048577`);
+          expect(result).toMatchInlineSnapshot(`1`);
           blocknumpres(null);
         } catch (e: unknown) {
           blocknumprej(e);

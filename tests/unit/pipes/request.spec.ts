@@ -13,6 +13,7 @@ const defaultReply: ReplyItem = {
   request_id: 'test11',
   provider_id: 'test',
   result: {
+    errorCode: 0,
     payload: '0x100001',
     signature:
       '3046022100ae2ba14dfa05ad7e6b77d2ead0800420fe61cfe607f49b79e698d5f25550d34022100f220549234a1b15ec437a41814d463a7de1e93fd90292e28671c8e84c041b8d9',
@@ -26,6 +27,7 @@ const defaultReply: ReplyItem = {
 
 const defaultRequest: DrpcRequest = {
   id: '450359962737049540',
+  dkey: '',
   provider_ids: ['test'],
   rpc: [
     {
@@ -131,6 +133,7 @@ describe('Request', () => {
           error: {
             kind: failureKindToNumber('partial'),
             code: 0,
+            item_ids: [],
             message: 'test',
           },
         }),
@@ -151,6 +154,7 @@ describe('Request', () => {
         createReply({
           provider_id: 'test2',
           error: {
+            item_ids: [],
             kind: failureKindToNumber('total'),
             code: 0,
             message: 'test',
