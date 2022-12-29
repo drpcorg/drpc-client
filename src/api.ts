@@ -52,8 +52,8 @@ export type RpcState = {
   quorum_from: number;
   quorum_of: number;
   network: string;
-  api_key: string;
-  dkey: string;
+  api_key?: string;
+  dkey?: string;
   dontShuffle: boolean;
   skipSignatureCheck: boolean;
   skipResponseDeepCheck: boolean;
@@ -68,8 +68,8 @@ export type ProviderSettings = {
   quorum_from?: number;
   quorum_of?: number;
   timeout?: number;
-  api_key: string;
-  dkey: string;
+  api_key?: string;
+  dkey?: string;
   network?: string;
   dontShuffle?: boolean;
   skipSignatureCheck?: boolean;
@@ -101,6 +101,9 @@ function createRequestItem(
 }
 
 function provider(settings: ProviderSettings): RpcState {
+  if (!settings.api_key && !settings.dkey) {
+    throw new Error('One of keys should be specified either api_key of dkey');
+  }
   return {
     api_key: settings.api_key,
     provider_ids: settings.provider_ids,
