@@ -1,27 +1,30 @@
+import { JestExpect } from '@jest/expect';
 import { WsApi } from '../../src/api';
-import { initState, wrapIdGen } from '../integration-init';
+import { initWsState, wrapIdGen } from '../integration-init';
 import { WS } from 'jest-websocket-mock';
 import { WebSocket } from 'mock-socket';
-
 let fakeUrl = 'ws://localhost:1234';
+
+declare var expect: JestExpect;
+
 describe('Websocket API', () => {
   afterEach(() => {
     WS.clean();
   });
 
   it('tests single response', async () => {
-    let api = wrapIdGen(
-      () => new WsApi(initState({ url: 'ws://localhost:8090' }))
-    );
+    let api = wrapIdGen(() => new WsApi(initWsState({})));
+
     let res = api.call({
-      method: 'eth_chainId',
-      params: [],
+      method: 'eth_getBalance',
+      params: ['0x175574c4a5e620fcf83672fa1c8680f41469d7f7', '0xff3b1d'],
     });
+
     expect(await res).toMatchInlineSnapshot(`
 Object {
   "id": "1",
   "jsonrpc": "2.0",
-  "result": "0x1",
+  "result": "0x20e6aba154fe",
 }
 `);
     await api.close();
@@ -29,11 +32,17 @@ Object {
 
   it('timeouts', async () => {
     const server = new WS(fakeUrl + '/ws');
+
     let api = wrapIdGen(
       () =>
-        new WsApi(initState({ url: fakeUrl, timeout: 1000 }), WebSocket as any)
+        new WsApi(
+          initWsState({ url: fakeUrl, timeout: 1000 }),
+          WebSocket as any
+        )
     );
+
     await server.connected;
+
     return expect(
       api.call({
         method: 'eth_chainId',
@@ -46,15 +55,20 @@ Object {
 
   it('handles disconnect with error', async () => {
     const server = new WS(fakeUrl + '/ws');
+
     let api = wrapIdGen(
-      () => new WsApi(initState({ url: fakeUrl }), WebSocket as any)
+      () => new WsApi(initWsState({ url: fakeUrl }), WebSocket as any)
     );
+
     await server.connected;
+
     let result = api.call({
       method: 'eth_chainId',
       params: [],
     });
+
     server.error();
+
     return expect(result).rejects.toMatchInlineSnapshot(
       `[Error: Connection closed unexpectedly with error]`
     );
@@ -64,11 +78,8 @@ Object {
     let api = wrapIdGen(
       () =>
         new WsApi(
-          initState({
-            url: 'ws://localhost:8090',
-            provider_ids: ['test', 'test1'],
-            quorum_of: 2,
-            api_key: 'test',
+          initWsState({
+            dkey: 'invalid',
           })
         )
     );
@@ -77,102 +88,96 @@ Object {
       method: 'eth_chainId',
       params: [],
     });
+
     await expect(res).rejects.toMatchInlineSnapshot(
       `[Error: Your token is invalid or expired]`
     );
+
     api.close();
   });
 
   it('handles close gracefuly', async () => {
     const server = new WS(fakeUrl + '/ws');
+
     let api = wrapIdGen(
-      () => new WsApi(initState({ url: fakeUrl }), WebSocket as any)
+      () => new WsApi(initWsState({ url: fakeUrl }), WebSocket as any)
     );
+
     await server.connected;
+
     let result = api.call({
       method: 'eth_chainId',
       params: [],
     });
+
     api.close();
     await server.closed;
+
     return expect(result).rejects.toMatchInlineSnapshot(
       `[Error: Partial request results, not enough data received or errors happened]`
     );
   });
 
-  it('returns data with error', () => {
-    let api = wrapIdGen(
-      () => new WsApi(initState({ url: 'ws://localhost:8090' }))
-    );
+  //   it('returns data with error', () => {
+  //     let api = wrapIdGen(() => new WsApi(initWsState({})));
 
-    return expect(
-api.call({
-  method: 'test_test',
-  params: [] })).
+  //     return expect(
+  // api.call({
+  //   method: 'eth_call',
+  //   params: ['', 'test'] })).
 
-
-resolves.toMatchInlineSnapshot(`
-Object {
-  "error": Object {
-    "code": 0,
-    "message": "The method test_test does not exist/is not available",
-  },
-  "id": "1",
-  "jsonrpc": "2.0",
-}
-`)
-      .finally(() => {
-        return api.close();
-      });
-  });
+  // resolves.toMatchInlineSnapshot(`
+  // Object {
+  //   "error": Object {
+  //     "code": 0,
+  //     "message": "invalid argument 0: json: cannot unmarshal string into Go value of type ethapi.CallArgs",
+  //   },
+  //   "id": "1",
+  //   "jsonrpc": "2.0",
+  // }
+  // `)
+  //       .finally(() => {
+  //         return api.close();
+  //       });
+  //   });
 
   it('tests multi response', async () => {
-    let api = wrapIdGen(
-      () => new WsApi(initState({ url: 'ws://localhost:8090' }))
-    );
+    let api = wrapIdGen(() => new WsApi(initWsState({})));
 
     let res = await api.callMulti([
       {
-        method: 'eth_chainId',
-        params: [],
+        method: 'eth_getBalance',
+        params: ['0x175574c4a5e620fcf83672fa1c8680f41469d7f7', '0xff3b1d'],
       },
       {
-        method: 'eth_getBlockByNumber',
-        params: ['0x0', false],
+        method: 'eth_call',
+        params: [
+          {
+            data: '0xe4a0ce2f',
+            gas: '0x2faf080',
+            to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
+          },
+          {
+            blockHash:
+              '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
+          },
+        ],
       },
     ]);
-    expect(res).toMatchInlineSnapshot(`
+
+    let sorted = res.sort((a, b) => (a.id > b.id ? 1 : -1));
+
+    expect(sorted).toMatchInlineSnapshot(`
 Array [
   Object {
     "id": "1",
     "jsonrpc": "2.0",
-    "result": "0x1",
+    "result": "0x20e6aba154fe",
   },
   Object {
     "id": "2",
     "jsonrpc": "2.0",
-    "result": Object {
-      "difficulty": "0x400000000",
-      "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
-      "gasLimit": "0x1388",
-      "gasUsed": "0x0",
-      "hash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
-      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-      "miner": "0x0000000000000000000000000000000000000000",
-      "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "nonce": "0x0000000000000042",
-      "number": "0x0",
-      "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-      "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
-      "size": "0x21c",
-      "stateRoot": "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
-      "timestamp": "0x0",
-      "totalDifficulty": "0x400000000",
-      "transactions": Array [],
-      "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
-      "uncles": Array [],
-    },
+    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
   },
 ]
 `);

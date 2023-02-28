@@ -1,5 +1,4 @@
 import { checkSha256 } from '../../src/isocrypto/signatures';
-import KEYS from '../../src/keys';
 import { sha256 } from '../../src/isocrypto/hashes';
 import {
   arrayBufferToHex,

@@ -4,9 +4,9 @@ import type {
   ReplyItem,
   HTTPResponse,
   JSONRPCResponse,
-} from 'drpc-proxy';
+} from '@drpcorg/drpc-proxy';
 import { CheckerT, createCheckers } from 'ts-interface-checker';
-import suite from 'drpc-proxy/protocol-ti';
+import suite from '@drpcorg/drpc-proxy/protocol-ti';
 import { initNonce } from './utils';
 import {
   Observable,
@@ -48,7 +48,7 @@ export type RpcState = {
   nextId: number;
   timeout: number;
   nextReqId: number;
-  provider_ids: string[];
+  provider_ids?: string[];
   quorum_from: number;
   quorum_of: number;
   network: string;
@@ -64,7 +64,7 @@ export type RpcState = {
  */
 export type ProviderSettings = {
   url: string;
-  provider_ids: string[];
+  provider_ids?: string[];
   quorum_from?: number;
   quorum_of?: number;
   timeout?: number;
@@ -177,7 +177,6 @@ abstract class Api {
       provider_ids: this.state.provider_ids,
       quorum: this.state.quorum_from,
       rpc: preqs,
-      api_key: this.state.api_key,
       dkey: this.state.dkey,
       network: this.state.network,
     };

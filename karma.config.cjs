@@ -1,5 +1,7 @@
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 const webpack = require('webpack');
+const Dotenv = require('dotenv-webpack');
+
 module.exports = function (config) {
   config.set({
     plugins: [
@@ -60,6 +62,7 @@ module.exports = function (config) {
         new webpack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer'],
         }),
+        new Dotenv(),
       ],
       module: {
         rules: [

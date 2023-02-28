@@ -1,8 +1,8 @@
 import { consensus } from '../../../src/pipes/consensus';
-import { JSONRPCResponse } from 'drpc-proxy';
+import { JSONRPCResponse } from '@drpcorg/drpc-proxy';
 import { Observable, unsubscribe } from 'observable-fns';
 import { collect, wait } from '../../../src/utils';
-import { jest } from '@jest/globals';
+import { jest, expect } from '@jest/globals';
 
 const defaultResponse = {
   payload: '0x100001',

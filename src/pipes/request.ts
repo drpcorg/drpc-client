@@ -1,14 +1,19 @@
-import { JSONRPCResponse, ReplyItem, Request as DrpcRequest } from 'drpc-proxy';
+import {
+  JSONRPCResponse,
+  ReplyItem,
+  Request as DrpcRequest,
+} from '@drpcorg/drpc-proxy';
 import { Observable, ObservableLike, unsubscribe } from 'observable-fns';
 import { failureKindFromNumber } from '../utils';
 
 export function requestFinalization(request: DrpcRequest) {
   let requestsSeen: Set<string> = new Set();
   let providers: Map<string, number> = new Map(
-    request.provider_ids.map((el) => [el, 0])
+    request.provider_ids?.map((el) => [el, 0])
   );
   let expectedIds = new Set(request.rpc.map((rpc) => rpc.id));
   let fulFilledProviders: Set<string> = new Set();
+
   return (items: ObservableLike<ReplyItem>) => {
     return new Observable<ReplyItem>((obs) => {
       let sub = items.subscribe({
@@ -53,7 +58,7 @@ export function requestFinalization(request: DrpcRequest) {
             }
           }
 
-          if (fulFilledProviders.size >= request.provider_ids.length) {
+          if (fulFilledProviders.size >= (request.provider_ids?.length || 0)) {
             obs.complete();
           }
         },

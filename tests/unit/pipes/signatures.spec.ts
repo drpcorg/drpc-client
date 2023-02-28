@@ -1,5 +1,5 @@
-import { ReplyItem, Request as DrpcRequest } from 'drpc-proxy';
-import { jest } from '@jest/globals';
+import { ReplyItem, Request as DrpcRequest } from '@drpcorg/drpc-proxy';
+import { jest, expect } from '@jest/globals';
 import { Observable, unsubscribe } from 'observable-fns';
 import { collect } from '../../../src/utils';
 let checkResult = true;
@@ -28,8 +28,6 @@ const request: DrpcRequest = {
       params: [],
     },
   ],
-  api_key:
-    'eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiJ0ZXN0aW5nIiwiZXhwIjoxNjYyODk4MDg0LCJqdGkiOiJ0ZXN0aW5nIiwiaWF0IjoxNjU0MjU4MDg0fQ.AHL7zUJ1SoBFoNFtT4wXnDTMExfJsJtzqZuGGrxB8By09uBoqPqisUuF2LF15k_fWsJ1zwo-308-WaybBkgpsGndALXFEvzxJ0-ZhSso7VHN0iF4qeWq1gbsCQKer_L9aDCUrnz2UR-xVeri0hqZ2-KheE861fIVKRsCMcvSsVuZeOEB',
   network: 'ethereum',
 };
 describe('Signatures', () => {

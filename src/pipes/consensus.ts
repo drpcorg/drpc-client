@@ -1,5 +1,5 @@
 import { Observable, ObservableLike, unsubscribe } from 'observable-fns';
-import { JSONRPCResponse, ReplyItem } from 'drpc-proxy';
+import { JSONRPCResponse, ReplyItem } from '@drpcorg/drpc-proxy';
 
 function hasConsensus(collection: JSONRPCResponse[], total: number): boolean {
   return Math.floor((2 * total) / 3) + 1 <= collection.length;

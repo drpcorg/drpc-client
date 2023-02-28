@@ -1,16 +1,10 @@
 import { DrpcProvider } from '../../src/providers/ethers';
-import { Polly } from '@pollyjs/core';
-import { initPolly, initState, wrapIdGen } from '../integration-init';
+import { initState, wrapIdGen } from '../integration-init';
+import { JestExpect } from '@jest/expect';
 
-let polly: Polly;
+declare var expect: JestExpect;
+
 describe('ethers provider', () => {
-  beforeAll(() => {
-    polly = initPolly('ethers');
-  });
-  afterAll(async () => {
-    await polly.stop();
-  });
-
   it('requests block height', async () => {
     let provider = wrapIdGen(() => new DrpcProvider(initState()));
     let result = await provider.getNetwork();
@@ -21,18 +15,10 @@ describe('ethers provider', () => {
   it('timeouts', () => {
     let provider = new DrpcProvider(
       initState({
-        timeout: 100,
+        timeout: 1,
       })
     );
-    polly.server.post(provider.api.state.url + '/rpc').intercept(
-      () => {
-        return new Promise((res) => {
-          setTimeout(res, 200);
-        });
-      },
-      // @ts-ignore
-      { times: 1 }
-    );
+
     return expect(provider.getBlockNumber()).rejects.toMatchInlineSnapshot(
       `[Error: Timeout: request took too long to complete]`
     );
