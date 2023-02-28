@@ -1,7 +1,10 @@
 import { ReplyItem, Request as DrpcRequest } from '@drpcorg/drpc-proxy';
-import { jest, expect } from '@jest/globals';
-import { Observable, unsubscribe } from 'observable-fns';
+import { jest, expect, it } from '@jest/globals';
+import { Observable, ObservableLike, unsubscribe } from 'observable-fns';
 import { collect } from '../../../src/utils';
+
+import type { checkSignatures as CheckSignaturesType } from '../../../src/pipes/signatures';
+
 let checkResult = true;
 jest.unstable_mockModule('../../../src/isocrypto/signatures', () => {
   return {
@@ -14,7 +17,7 @@ jest.unstable_mockModule('../../../src/isocrypto/signatures', () => {
     },
   };
 });
-let { checkSignatures } = await import('../../../src/pipes/signatures');
+
 const request: DrpcRequest = {
   id: '450359962737049540',
   dkey: '',
@@ -30,8 +33,16 @@ const request: DrpcRequest = {
   ],
   network: 'ethereum',
 };
+
+let checkSignatures: typeof CheckSignaturesType;
+
 describe('Signatures', () => {
-  it('checks correctly signed request', async () => {
+  beforeAll(async () => {
+    checkSignatures = (await import('../../../src/pipes/signatures'))
+      .checkSignatures;
+  });
+
+  it.only('checks correctly signed request', async () => {
     checkResult = true;
     const providerResponses: ReplyItem[] = [
       {
