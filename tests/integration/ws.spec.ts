@@ -1,11 +1,13 @@
 import { JestExpect } from '@jest/expect';
+import { it as JestIt } from '@jest/globals';
 import { WsApi } from '../../src/api';
-import { initWsState, wrapIdGen } from '../integration-init';
+import { DRPC_DKEY_PAID, initWsState, wrapIdGen } from '../integration-init';
 import { WS } from 'jest-websocket-mock';
 import { WebSocket } from 'mock-socket';
 let fakeUrl = 'ws://localhost:1234';
 
 declare var expect: JestExpect;
+declare var it: typeof JestIt;
 
 describe('Websocket API', () => {
   afterEach(() => {
@@ -72,6 +74,69 @@ Object {
     return expect(result).rejects.toMatchInlineSnapshot(
       `[Error: Connection closed unexpectedly with error]`
     );
+  });
+
+  it('Should run okay with paid key and specified quorum', async () => {
+    let api = wrapIdGen(
+      () =>
+        new WsApi(
+          initWsState({
+            quorum_of: 4,
+            dkey: DRPC_DKEY_PAID,
+            provider_ids: ['p2p-01', 'attestant', 'p-ops', 'stakesquid'],
+          })
+        )
+    );
+
+    let res = await api.callMulti([
+      {
+        method: 'eth_call',
+        params: [
+          {
+            data: '0xe4a0ce2f',
+            gas: '0x2faf080',
+            to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
+          },
+          {
+            blockHash:
+              '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
+          },
+        ],
+      },
+      {
+        method: 'eth_call',
+        params: [
+          {
+            data: '0xe4a0ce2f',
+            gas: '0x2faf080',
+            to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
+          },
+          {
+            blockHash:
+              '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
+          },
+        ],
+      },
+    ]);
+
+    let sorted = res.sort((a, b) => (a.id > b.id ? 1 : -1));
+
+    expect(sorted).toMatchInlineSnapshot(`
+Array [
+  Object {
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
+  },
+  Object {
+    "id": "2",
+    "jsonrpc": "2.0",
+    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
+  },
+]
+`);
+
+    api.close();
   });
 
   it('returns error when incorrect api token', async () => {

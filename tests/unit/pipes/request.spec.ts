@@ -10,7 +10,9 @@ import {
 } from '@drpcorg/drpc-proxy';
 import { Observable, unsubscribe } from 'observable-fns';
 import { collect, failureKindToNumber } from '../../../src/utils';
-import { jest, expect } from '@jest/globals';
+import { jest, expect, it as JestIt } from '@jest/globals';
+
+declare var it: typeof JestIt;
 
 const defaultReply: ReplyItem = {
   id: '450359962737049540',
@@ -85,6 +87,7 @@ describe('Request', () => {
     it('completes stream when all responses were seen', async () => {
       let request = createRequest({
         provider_ids: ['test1', 'test2'],
+        quorum: 2,
       });
       let data = [
         createReply({ provider_id: 'test1' }),
@@ -98,35 +101,10 @@ describe('Request', () => {
       expect(result).toEqual(data);
     });
 
-    it('filters out requests I do not asked for', async () => {
-      let request = createRequest({
-        provider_ids: ['test1', 'test2'],
-      });
-      let data = [
-        createReply({ provider_id: 'test1' }),
-        createReply({
-          provider_id: 'test1',
-          id: '3434',
-          result: {
-            ...(defaultReply.result as JSONRPCResponse),
-            id: '3434',
-          },
-        }),
-      ];
-      let spy = jest.fn();
-      let response = new Observable((obs) => {
-        data.forEach((item) => obs.next(item));
-      })
-        .pipe(requestFinalization(request))
-        .subscribe({ next: spy, complete: spy });
-      await timeout(50);
-      expect(spy).toBeCalledWith(createReply({ provider_id: 'test1' }));
-      expect(spy).toBeCalledTimes(1);
-    });
-
     it('handles partial failure', async () => {
       let request = createRequest({
         provider_ids: ['test1', 'test2'],
+        quorum: 2,
       });
       let data = [
         createReply({ provider_id: 'test1' }),
@@ -135,7 +113,7 @@ describe('Request', () => {
           error: {
             kind: failureKindToNumber('partial'),
             code: 0,
-            item_ids: [],
+            item_ids: ['450359962737049540'],
             message: 'test',
           },
         }),

@@ -58,17 +58,6 @@ describe('Consensus', () => {
     expect(result).toEqual(items.slice(0, 2));
   });
 
-  it('consensus with non full response', async () => {
-    const items: JSONRPCResponse[] = [
-      createResponse({ id: '1' }),
-      createResponse({ id: '1' }),
-      createResponse({ id: '1' }),
-      createResponse({ id: '1' }),
-    ];
-    let result = await collect(Observable.from(items).pipe(consensus(5)));
-    expect(result).toEqual(items.slice(0, 1));
-  });
-
   it("can't reach consensus", async () => {
     const items: JSONRPCResponse[] = [
       createResponse({ id: '1' }),
@@ -126,7 +115,7 @@ describe('Consensus', () => {
       createResponse({ id: '1', payload: '0x100002' }),
       createResponse({ id: '1', payload: '0x100002' }),
     ];
-    let result = await collect(Observable.from(items).pipe(consensus(9)));
+    let result = await collect(Observable.from(items).pipe(consensus(7)));
     expect(result).toEqual(items.slice(1, 2));
   });
 

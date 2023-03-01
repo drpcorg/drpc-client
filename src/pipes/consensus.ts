@@ -1,8 +1,11 @@
 import { Observable, ObservableLike, unsubscribe } from 'observable-fns';
 import { JSONRPCResponse, ReplyItem } from '@drpcorg/drpc-proxy';
 
-function hasConsensus(collection: JSONRPCResponse[], total: number): boolean {
-  return Math.floor((2 * total) / 3) + 1 <= collection.length;
+function hasConsensus(
+  collection: JSONRPCResponse[],
+  quorumOf: number
+): boolean {
+  return quorumOf <= collection.length;
 }
 
 /**
@@ -15,7 +18,7 @@ export class ConsensusError extends Error {
   }
 }
 
-export function consensus(total: number) {
+export function consensus(quorumOf: number) {
   return (
     items: ObservableLike<JSONRPCResponse>
   ): Observable<JSONRPCResponse> => {
@@ -34,7 +37,7 @@ export function consensus(total: number) {
             accumulator[item.id][key] = [];
           }
           accumulator[item.id][key].push(item);
-          if (hasConsensus(accumulator[item.id][key], total)) {
+          if (hasConsensus(accumulator[item.id][key], quorumOf)) {
             obs.next(accumulator[item.id][key][0]);
             consensus[item.id] = true;
           }

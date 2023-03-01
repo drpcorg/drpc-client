@@ -2,8 +2,10 @@ import { HTTPApi } from '../../src/api';
 import { initState, wrapIdGen, DRPC_DKEY_PAID } from '../integration-init';
 import PUBLIC_KEYS from '../../src/keys';
 import { JestExpect } from '@jest/expect';
+import { it as JestIt } from '@jest/globals';
 
 declare var expect: JestExpect;
+declare var it: typeof JestIt;
 
 describe('HTTP API', () => {
   it('tests single response eth_call', async () => {
@@ -65,40 +67,62 @@ Object {
     );
   });
 
-  it('Fails using quorum_of with free plan dkey', async () => {
+  it('Should run okay with paid key and specified quorum', async () => {
     let api = wrapIdGen(
       () =>
         new HTTPApi(
           initState({
-            quorum_of: 2,
+            quorum_of: 4,
             dkey: DRPC_DKEY_PAID,
-            provider_ids: ['p2p-01', 'attestant'],
+            provider_ids: ['p2p-01', 'attestant', 'p-ops', 'stakesquid'],
           })
         )
     );
 
-    let res = api.call({
-      method: 'eth_call',
-      params: [
-        {
-          data: '0xe4a0ce2f',
-          gas: '0x2faf080',
-          to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
-        },
-        {
-          blockHash:
-            '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
-        },
-      ],
-      id: 100,
-    });
+    let res = api.callMulti([
+      {
+        method: 'eth_call',
+        params: [
+          {
+            data: '0xe4a0ce2f',
+            gas: '0x2faf080',
+            to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
+          },
+          {
+            blockHash:
+              '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
+          },
+        ],
+      },
+      {
+        method: 'eth_call',
+        params: [
+          {
+            data: '0xe4a0ce2f',
+            gas: '0x2faf080',
+            to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
+          },
+          {
+            blockHash:
+              '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
+          },
+        ],
+      },
+    ]);
 
     await expect(res).resolves.toMatchInlineSnapshot(`
-Object {
-  "id": "100",
-  "jsonrpc": "2.0",
-  "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
-}
+Array [
+  Object {
+    "id": "2",
+    "jsonrpc": "2.0",
+    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
+  },
+  Object {
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
+  },
+]
 `);
   });
 

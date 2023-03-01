@@ -7,58 +7,61 @@ import { Observable, ObservableLike, unsubscribe } from 'observable-fns';
 import { failureKindFromNumber } from '../utils';
 
 export function requestFinalization(request: DrpcRequest) {
-  let requestsSeen: Set<string> = new Set();
-  let providers: Map<string, number> = new Map(
-    request.provider_ids?.map((el) => [el, 0])
+  let requestsRepliesMap = new Map<string, Set<string>>(
+    request.rpc.map((rpc) => [rpc.id, new Set()])
   );
-  let expectedIds = new Set(request.rpc.map((rpc) => rpc.id));
-  let fulFilledProviders: Set<string> = new Set();
+  let quorum = request.quorum || 1;
 
   return (items: ObservableLike<ReplyItem>) => {
     return new Observable<ReplyItem>((obs) => {
       let sub = items.subscribe({
         next(item) {
           if (item.error) {
-            switch (failureKindFromNumber(item.error.kind)) {
-              case 'partial':
-                fulFilledProviders = fulFilledProviders.add(item.provider_id);
+            let kind = failureKindFromNumber(item.error.kind);
+
+            switch (kind) {
+              case 'partial': {
+                let item_ids = item.error.item_ids || [];
+
+                for (let id of item_ids) {
+                  let existingSet = requestsRepliesMap.get(id) || new Set();
+                  let newSet = existingSet.add(item.provider_id);
+                  requestsRepliesMap.set(id, newSet);
+                }
+
+                // TODO: Pass the partial error to consensus pipe?
+                // obs.next(item);
+
                 break;
-              case 'total':
+              }
+              case 'total': {
                 obs.error(new Error(item.error.message));
-                return;
+                break;
+              }
+              default: {
+                obs.error(new Error(`Unknown item error kind`));
+              }
             }
           } else {
-            // Filter unexpected data
-            if (!item.id || !expectedIds.has(item.id)) {
-              return;
-            }
-            if (!providers.has(item.provider_id)) {
-              return;
-            }
-            // check duplicates
-            let key = JSON.stringify([item.provider_id, item.id]);
-            if (requestsSeen.has(key)) {
-              return;
-            }
-            requestsSeen = requestsSeen.add(key);
-            obs.next(item);
-          }
-
-          if (!fulFilledProviders.has(item.provider_id)) {
-            // check if this item fulfills provider
-            let receivedRequestsForProvider =
-              providers.get(item.provider_id) || 0;
-            if (receivedRequestsForProvider + 1 >= expectedIds.size) {
-              fulFilledProviders = fulFilledProviders.add(item.provider_id);
+            if (!item.id || !requestsRepliesMap.get(item.id)) {
+              obs.error(new Error('No item id or unexpected item id'));
             } else {
-              providers = providers.set(
-                item.provider_id,
-                receivedRequestsForProvider + 1
+              let existingSet = requestsRepliesMap.get(item.id) || new Set();
+              if (!existingSet.has(item.provider_id)) {
+                obs.next(item);
+              }
+
+              requestsRepliesMap.set(
+                item.id,
+                existingSet.add(item.provider_id)
               );
             }
           }
 
-          if (fulFilledProviders.size >= (request.provider_ids?.length || 0)) {
+          let setsArray = Array.from(requestsRepliesMap.values());
+          let quorumFulfilled = setsArray.every((s) => s.size >= quorum);
+
+          if (quorumFulfilled) {
             obs.complete();
           }
         },
