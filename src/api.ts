@@ -76,6 +76,10 @@ export type ProviderSettings = {
   skipResponseDeepCheck?: boolean;
 };
 
+export type ProviderSettingsMaybeURL = Omit<ProviderSettings, 'url'> & {
+  url?: string;
+};
+
 /**
  * Simple JSON rpc request type
  */
@@ -220,7 +224,22 @@ abstract class Api {
 /**
  * HTTP API provider
  */
+
+function withHTTPDefaultURL(
+  settings: Omit<ProviderSettings, 'url'> & { url?: string }
+): ProviderSettings {
+  if (!settings.url) {
+    settings.url = 'https://main.drpc.org';
+  }
+  return settings as ProviderSettings;
+}
+
 export class HTTPApi extends Api {
+  constructor(settings: ProviderSettingsMaybeURL) {
+    let enhanced = withHTTPDefaultURL(settings);
+    super(enhanced);
+  }
+
   private async execute(
     controller: AbortController,
     request: DrpcRequest
@@ -265,6 +284,14 @@ export class HTTPApi extends Api {
   }
 }
 
+function withWebsocketDefaultURL(
+  settings: Omit<ProviderSettings, 'url'> & { url?: string }
+): ProviderSettings {
+  if (!settings.url) {
+    settings.url = 'wss://main.drpc.org';
+  }
+  return settings as ProviderSettings;
+}
 export class WsApi extends Api {
   private readonly wsconn: WS.w3cwebsocket;
   private readonly outputStream: Subject<ReplyItem>;
@@ -273,10 +300,11 @@ export class WsApi extends Api {
   private readonly closing: Promise<void>;
 
   constructor(
-    settings: ProviderSettings,
+    settings: ProviderSettingsMaybeURL,
     client: typeof WS.w3cwebsocket | undefined = undefined
   ) {
-    super(settings);
+    let enhanced = withWebsocketDefaultURL(settings);
+    super(enhanced);
     this.outputStream = new Subject<ReplyItem>();
     this.inputStream = new Subject<DrpcRequest>();
     let Client = client || WS.w3cwebsocket;

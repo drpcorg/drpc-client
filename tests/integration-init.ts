@@ -5,11 +5,12 @@ if (typeof window === 'undefined') {
   dotenv.config();
 }
 
-import { ProviderSettings, RpcState } from '../src/api';
+import {
+  ProviderSettings,
+  ProviderSettingsMaybeURL,
+  RpcState,
+} from '../src/api';
 import Sinon from 'sinon';
-
-const PROXY_URL = 'https://main.drpc.org';
-const PROXY_URL_WS = 'wss://main.drpc.org';
 
 export const DRPC_DKEY = process.env.DRPC_DKEY;
 export const DRPC_DKEY_PAID = process.env.DRPC_DKEY_PAID;
@@ -23,8 +24,7 @@ export function wrapIdGen<T>(fn: () => T): T {
 }
 
 export function initState(pstate: Partial<RpcState> = {}) {
-  let state: ProviderSettings = {
-    url: PROXY_URL,
+  let state: ProviderSettingsMaybeURL = {
     provider_ids: ['p2p-01'],
     dkey: DRPC_DKEY,
   };
@@ -32,8 +32,7 @@ export function initState(pstate: Partial<RpcState> = {}) {
 }
 
 export function initWsState(pstate: Partial<RpcState> = {}) {
-  let state: ProviderSettings = {
-    url: PROXY_URL_WS,
+  let state: ProviderSettingsMaybeURL = {
     provider_ids: ['p2p-01'],
     dkey: DRPC_DKEY,
   };

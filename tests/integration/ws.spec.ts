@@ -183,29 +183,6 @@ Array [
     );
   });
 
-  //   it('returns data with error', () => {
-  //     let api = wrapIdGen(() => new WsApi(initWsState({})));
-
-  //     return expect(
-  // api.call({
-  //   method: 'eth_call',
-  //   params: ['', 'test'] })).
-
-  // resolves.toMatchInlineSnapshot(`
-  // Object {
-  //   "error": Object {
-  //     "code": 0,
-  //     "message": "invalid argument 0: json: cannot unmarshal string into Go value of type ethapi.CallArgs",
-  //   },
-  //   "id": "1",
-  //   "jsonrpc": "2.0",
-  // }
-  // `)
-  //       .finally(() => {
-  //         return api.close();
-  //       });
-  //   });
-
   it('tests multi response', async () => {
     let api = wrapIdGen(() => new WsApi(initWsState({})));
 
