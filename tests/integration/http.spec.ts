@@ -113,19 +113,19 @@ Object {
     let sorted = res.sort((a, b) => (a.id > b.id ? 1 : -1));
 
     expect(sorted).toMatchInlineSnapshot(`
-Array [
-  Object {
-    "id": "1",
-    "jsonrpc": "2.0",
-    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
-  },
-  Object {
-    "id": "2",
-    "jsonrpc": "2.0",
-    "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
-  },
-]
-`);
+  Array [
+    Object {
+      "id": "1",
+      "jsonrpc": "2.0",
+      "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
+    },
+    Object {
+      "id": "2",
+      "jsonrpc": "2.0",
+      "result": "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9",
+    },
+  ]
+  `);
   });
 
   it('timeouts', () => {
@@ -172,6 +172,7 @@ Array [
           initState({
             provider_ids: ['p2p-01', 'attestant'],
             quorum_of: 2,
+            quorum_from: 2,
             dkey: DRPC_DKEY_PAID,
           })
         )
@@ -182,16 +183,29 @@ Array [
 
     let res = api
       .call({
-        method: 'eth_blockNumber',
-        params: [],
+        method: 'eth_call',
+        params: [
+          {
+            data: '0xe4a0ce2f',
+            gas: '0x2faf080',
+            to: '0xa4492fcda2520cb68657d220f4d4ae3116359c10',
+          },
+          {
+            blockHash:
+              '0xa691d05d7ce54367f4acb6ab89c55db2aaae685711046e2352ae8ad1f51e9d6f',
+          },
+        ],
       })
       .finally(() => {
         PUBLIC_KEYS['p2p-01'] = oldp2p;
       });
 
-    return expect(res).rejects.toMatchInlineSnapshot(
-      `[Error: Consensus failure: Unable to reach consensus, response is not trustworthy]`
-    );
+    return expect(res).rejects.toMatchInlineSnapshot(`
+[Error: Consensus failure, response is not trustworthy: Unable to reach consensus.
+For request 1:
+Expected consensus of 2:
+Received 1 replies with payload "0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006b175474e89094c44da98b954eedeac495271d0f0000000000000000000000005f4ec3df9cbd43714fe2740f5e3616155c5b8419000000000000000000000000aed0c38402a5d19df6e4c03f4e2dced6e29c1ee9"]
+`);
   });
 
   it('not returns error if response is signed incorrectly, but skipSignatureCheck set', () => {

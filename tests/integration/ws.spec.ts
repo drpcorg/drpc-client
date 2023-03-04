@@ -178,9 +178,11 @@ Array [
     api.close();
     await server.closed;
 
-    return expect(result).rejects.toMatchInlineSnapshot(
-      `[Error: Partial request results, not enough data received or errors happened]`
-    );
+    return expect(result).rejects.toMatchInlineSnapshot(`
+[Error: Consensus failure, response is not trustworthy: Unable to reach consensus.
+For request 1:
+No responses received]
+`);
   });
 
   it('tests multi response', async () => {
