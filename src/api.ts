@@ -17,11 +17,7 @@ import {
   Subscription,
 } from 'observable-fns';
 import nodefetch from 'node-fetch';
-import {
-  requestFinalization,
-  requestCompletness,
-  requestTimeout,
-} from './pipes/request';
+import { requestFinalization, requestTimeout } from './pipes/request';
 import { checkSignatures } from './pipes/signatures';
 import { consensus } from './pipes/consensus';
 import { collect, shuffleArray } from './utils';
@@ -185,6 +181,9 @@ abstract class Api {
       network: this.state.network,
     };
 
+    // TODO: Thow error if quorum_of > (quorum_from / 2)
+    // quorum_of > (quorum_from / 2)
+
     let items = await collect(
       this.send(request).pipe(
         requestFinalization(request),
@@ -192,9 +191,8 @@ abstract class Api {
         this.state.skipSignatureCheck
           ? filter(() => true)
           : checkSignatures(request),
-        map((item) => item.result as JSONRPCResponse),
-        consensus(this.state.quorum_of),
-        requestCompletness(request)
+        consensus(request.rpc, this.state.quorum_of),
+        map((item) => item.result as JSONRPCResponse)
       )
     );
 
