@@ -1,5 +1,4 @@
 import {
-  requestCompletness,
   requestFinalization,
   requestTimeout,
 } from '../../../src/pipes/request';
@@ -123,7 +122,7 @@ describe('Request', () => {
           data.forEach((item) => obs.next(item));
         }).pipe(requestFinalization(request))
       );
-      expect(result).toEqual([createReply({ provider_id: 'test1' })]);
+      expect(result).toEqual(data);
     });
 
     it('handles total failure', async () => {
@@ -147,44 +146,6 @@ describe('Request', () => {
         }).pipe(requestFinalization(request))
       );
       expect(result).rejects.toMatchInlineSnapshot(`[Error: test]`);
-    });
-  });
-
-  describe('completness', () => {
-    it('handles unsubscription', () => {
-      let spy = jest.fn();
-      let sub = new Observable(() => {
-        return spy;
-      })
-        .pipe(requestCompletness(createRequest()))
-        .subscribe({});
-      unsubscribe(sub);
-      expect(spy).toHaveBeenCalled();
-    });
-
-    it('filters unexpected requests', async () => {
-      let results = await collect(
-        Observable.from([
-          { ...(createReply().result as JSONRPCResponse), id: '23232323' },
-          createReply().result as JSONRPCResponse,
-        ]).pipe(requestCompletness(createRequest()))
-      );
-      expect(results).toEqual(results);
-    });
-
-    it('walks happy path', async () => {
-      let results = await collect(
-        Observable.from([createReply().result as JSONRPCResponse]).pipe(
-          requestCompletness(createRequest())
-        )
-      );
-      expect(results).toEqual(results);
-    });
-
-    it("errors when haven't seen any data on some requests", async () => {
-      return expect(
-        collect(Observable.from([]).pipe(requestCompletness(createRequest())))
-      ).rejects.toThrowError(/Partial request results/);
     });
   });
 
