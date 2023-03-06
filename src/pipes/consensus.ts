@@ -8,9 +8,6 @@ import {
 import { failureKindFromNumber } from '../utils';
 
 function hasConsensus(collection: Array<ReplyItem>, quorumOf: number) {
-  console.log('Checking consensus for collection: ', collection);
-  console.log('quorumOf: ', quorumOf);
-
   return quorumOf <= collection.length;
 }
 
@@ -92,7 +89,6 @@ export function consensus(requests: JSONRPCRequest[], quorumOf: number) {
             !consensus.has(item.id) ||
             item.result === undefined
           ) {
-            console.log('Returning because item is not expected: ', item);
             return;
           }
 
@@ -114,13 +110,7 @@ export function consensus(requests: JSONRPCRequest[], quorumOf: number) {
         },
         complete() {
           let consensumValues = Array.from(consensus.values());
-          console.log('consensumValues: ', consensumValues);
-          const completeConsensus = consensumValues.every((el) => el);
-
-          console.log('Completing...');
-          console.log('Consensus object: ', consensus);
-          console.log('accumulatorPartialError: ', accumulatorPartialError);
-          console.log('accumulator: ', accumulator);
+          let completeConsensus = consensumValues.every((el) => el);
 
           let partialErrorsMessage = Object.entries(accumulatorPartialError)
             .filter((el) => {
@@ -135,7 +125,6 @@ export function consensus(requests: JSONRPCRequest[], quorumOf: number) {
             })
             .join(', ');
 
-          console.log('completeConsensus: ', completeConsensus);
           if (!completeConsensus) {
             let reasons = Array.from(consensus.entries())
               .filter((el) => {
@@ -158,15 +147,12 @@ export function consensus(requests: JSONRPCRequest[], quorumOf: number) {
               })
               .join('\n\n');
 
-            console.log('reasons: ', reasons);
-
             let message = `Unable to reach consensus.\n${reasons}`;
 
             if (partialErrorsMessage) {
               message = `${message}. Errors occured: ${partialErrorsMessage}`;
             }
 
-            console.log('Consensus error: ', message);
             obs.error(new ConsensusError(message));
           } else {
             obs.complete();
