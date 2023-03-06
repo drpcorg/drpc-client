@@ -106,7 +106,9 @@ function provider(settings: ProviderSettings): RpcState {
   let quorum_from = settings.quorum_from || settings.quorum_of || 1;
   let quorum_of = settings.quorum_of || settings.quorum_from || 1;
 
-  if (quorum_of > quorum_from / 2) {
+  let isQuorumRateOkay = quorum_of > quorum_from / 2;
+
+  if (!isQuorumRateOkay) {
     throw new Error('quorum_of should be more that quorum_from / 2');
   }
 
