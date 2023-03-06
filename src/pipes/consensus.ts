@@ -42,15 +42,8 @@ export class RequestsCompletionError extends Error {
 
 export function consensus(requests: JSONRPCRequest[], quorumOf: number) {
   return (items: ObservableLike<ReplyItem>): Observable<ReplyItem> => {
-    // Request completeness
-    // let expectedRequests = new Set(request.rpc.map((item) => item.id));
-    // let accumulatedRequests: Set<string> = new Set();
-
-    // Consensus is reached when we have at least quorumOf responses for a given request
-    // let accumulator: { [id: string]: { [hash: string]: Array<ReplyItem> }; } = {};
     let accumulator: { [id: string]: { [hash: string]: Array<ReplyItem> } } =
       {};
-    // let consensus: { [id: string]: boolean } = {};
     let consensus = new Map<string, boolean>(
       requests.map((rpc) => [rpc.id, false])
     );

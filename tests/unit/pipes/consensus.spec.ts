@@ -66,20 +66,6 @@ describe('Consensus', () => {
     expect(result).toEqual(items);
   });
 
-  // TODO: Does this make sense?
-  // it.only('2 responses from 1 provide', async () => {
-  //   const items: ReplyItem[] = [
-  //     createResponse({ id: '1' }),
-  //     createResponse({ id: '2' }),
-  //   ];
-
-  // let result = await collect(
-  //   Observable.from(items).pipe(consensus([createRequest()], 1))
-  // );
-
-  //   expect(result).toEqual(items);
-  // });
-
   it('1 response per 2 providers', async () => {
     const items: ReplyItem[] = [
       createResponse({ id: '1' }),
