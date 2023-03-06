@@ -48,7 +48,6 @@ export type RpcState = {
   quorum_from: number;
   quorum_of: number;
   network: string;
-  api_key?: string;
   dkey?: string;
   dontShuffle: boolean;
   skipSignatureCheck: boolean;
@@ -64,7 +63,6 @@ export type ProviderSettings = {
   quorum_from?: number;
   quorum_of?: number;
   timeout?: number;
-  api_key?: string;
   dkey?: string;
   network?: string;
   dontShuffle?: boolean;
@@ -101,14 +99,21 @@ function createRequestItem(
 }
 
 function provider(settings: ProviderSettings): RpcState {
-  if (!settings.api_key && !settings.dkey) {
-    throw new Error('One of keys should be specified either api_key of dkey');
+  if (!settings.dkey) {
+    throw new Error('dkey should be specified');
   }
+
+  let quorum_from = settings.quorum_from || settings.quorum_of || 1;
+  let quorum_of = settings.quorum_of || settings.quorum_from || 1;
+
+  if (quorum_of > quorum_from / 2) {
+    throw new Error('quorum_of should be more that quorum_from / 2');
+  }
+
   return {
-    api_key: settings.api_key,
     provider_ids: settings.provider_ids,
-    quorum_from: settings.quorum_from || settings.quorum_of || 1,
-    quorum_of: settings.quorum_of || settings.quorum_from || 1,
+    quorum_from,
+    quorum_of,
     nextId: initNonce(),
     nextNonce: initNonce(),
     nextReqId: initNonce(),
@@ -180,9 +185,6 @@ abstract class Api {
       dkey: this.state.dkey,
       network: this.state.network,
     };
-
-    // TODO: Thow error if quorum_of > (quorum_from / 2)
-    // quorum_of > (quorum_from / 2)
 
     let items = await collect(
       this.send(request).pipe(
