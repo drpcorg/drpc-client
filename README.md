@@ -14,7 +14,7 @@ import { HTTPApi } from 'drpc-sdk';
 
 async function getBlockHeight() {
   let api = new HTTPApi({
-    api_key: 'api key',
+    dkey: 'api key',
     url: 'https://drpc.org/api',
     provider_ids: ['test'],
     provider_num: 1,
@@ -72,7 +72,7 @@ import { HttpDrpcProvider } from 'drpc-sdk/dist/esm/providers/web3';
 
 async function getBlock(tag) {
   let state = provider({
-    api_key: 'api key',
+    dkey: 'api key',
     url: 'https://drpc.org/api',
     provider_ids: ['test'],
     provider_num: 1,
@@ -96,7 +96,7 @@ import { DrpcProvider } from 'drpc-sdk/dist/esm/providers/ethers';
 
 async function getBlock(tag) {
   let state = provider({
-    api_key: 'api key',
+    dkey: 'api key',
     url: 'https://drpc.org/api',
     provider_ids: ['test'],
     provider_num: 1,
