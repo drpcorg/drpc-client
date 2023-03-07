@@ -32,7 +32,7 @@ clean:
 	rm -rf ./dist_*
 
 run-publish: test integration-node integration-browser clean build
-	npm publish
+	npm publish --access=public
 
 publish:
 	$(MAKE) run-publish NOWATCH=true
