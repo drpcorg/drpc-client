@@ -1,5 +1,9 @@
-import { JSONRPCResponse, ReplyItem, Request as DrpcRequest } from 'drpc-proxy';
-import PUBLIC_KEYS from '../keys';
+import {
+  JSONRPCResponse,
+  ReplyItem,
+  Request as DrpcRequest,
+} from '@drpcorg/drpc-proxy';
+import PUBLIC_KEYS, { DrpcProviders } from '../keys';
 import { sha256 } from '../isocrypto/hashes';
 import { checkSha256 } from '../isocrypto/signatures';
 import { Observable, ObservableLike, filter } from 'observable-fns';
@@ -39,10 +43,14 @@ export function checkSignatures(request: DrpcRequest) {
       );
       return false;
     }
-    if (!PUBLIC_KEYS[item.provider_id]) {
+    if (!PUBLIC_KEYS[item.provider_id as DrpcProviders]) {
       console.warn(`Do not have public key for ${item.provider_id} provider`);
       return false;
     }
-    return checkSha256(prepared, data.signature, PUBLIC_KEYS[item.provider_id]);
+    return checkSha256(
+      prepared,
+      data.signature,
+      PUBLIC_KEYS[item.provider_id as DrpcProviders]
+    );
   });
 }

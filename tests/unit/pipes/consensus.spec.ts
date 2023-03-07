@@ -1,8 +1,12 @@
 import { consensus } from '../../../src/pipes/consensus';
-import { JSONRPCResponse } from 'drpc-proxy';
+import {
+  JSONRPCRequest,
+  JSONRPCResponse,
+  ReplyItem,
+} from '@drpcorg/drpc-proxy';
 import { Observable, unsubscribe } from 'observable-fns';
 import { collect, wait } from '../../../src/utils';
-import { jest } from '@jest/globals';
+import { jest, expect } from '@jest/globals';
 
 const defaultResponse = {
   payload: '0x100001',
@@ -15,78 +19,105 @@ const defaultResponse = {
   ok: true,
 };
 
-function createResponse(data: Partial<JSONRPCResponse> = {}) {
-  return { ...defaultResponse, ...data };
+function createResponse(data: Partial<JSONRPCResponse> = {}): ReplyItem {
+  let result = {
+    ...defaultResponse,
+    ...data,
+  };
+
+  return {
+    result,
+    request_id: '1',
+    provider_id: 'test-1',
+    id: result.id,
+  };
+}
+
+function createRequest(data: Partial<JSONRPCRequest> = {}): JSONRPCRequest {
+  return {
+    method: 'eth_call',
+    params: [],
+    id: '1',
+    nonce: 0,
+    jsonrpc: '2.0',
+    ...data,
+  };
 }
 
 describe('Consensus', () => {
   it('one response consensus', async () => {
-    const items: JSONRPCResponse[] = [createResponse()];
-    let result = await collect(Observable.from(items).pipe(consensus(1)));
-    expect(result).toEqual(items);
-  });
-
-  it('2 responses from 1 provide', async () => {
-    const items: JSONRPCResponse[] = [
-      createResponse({ id: '1' }),
-      createResponse({ id: '2' }),
-    ];
-
-    let result = await collect(Observable.from(items).pipe(consensus(1)));
+    const items: ReplyItem[] = [createResponse()];
+    let result = await collect(
+      Observable.from(items).pipe(
+        consensus(
+          [
+            {
+              method: 'eth_call',
+              params: [],
+              id: '1',
+              nonce: 0,
+              jsonrpc: '2.0',
+            },
+          ],
+          1
+        )
+      )
+    );
     expect(result).toEqual(items);
   });
 
   it('1 response per 2 providers', async () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '1' }),
     ];
 
-    let result = await collect(Observable.from(items).pipe(consensus(2)));
+    let result = await collect(
+      Observable.from(items).pipe(consensus([createRequest()], 2))
+    );
     expect(result).toEqual(items.slice(0, 1));
   });
 
   it('2 responses per 2 providers', async () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '2' }),
       createResponse({ id: '1' }),
       createResponse({ id: '2' }),
     ];
 
-    let result = await collect(Observable.from(items).pipe(consensus(2)));
+    let result = await collect(
+      Observable.from(items).pipe(
+        consensus([createRequest({ id: '1' }), createRequest({ id: '2' })], 2)
+      )
+    );
+
     expect(result).toEqual(items.slice(0, 2));
   });
 
-  it('consensus with non full response', async () => {
-    const items: JSONRPCResponse[] = [
-      createResponse({ id: '1' }),
-      createResponse({ id: '1' }),
-      createResponse({ id: '1' }),
-      createResponse({ id: '1' }),
-    ];
-    let result = await collect(Observable.from(items).pipe(consensus(5)));
-    expect(result).toEqual(items.slice(0, 1));
-  });
-
   it("can't reach consensus", async () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '1' }),
       createResponse({ id: '1' }),
     ];
     return expect(
-      collect(Observable.from(items).pipe(consensus(5)))
+      collect(
+        Observable.from(items).pipe(consensus([createRequest({ id: '1' })], 5))
+      )
     ).rejects.toThrowError();
   });
+
   it("can't reach consensus on 1 of 2", async () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '1' }),
       createResponse({ id: '2' }),
     ];
     const spy = jest.fn();
-    let cs = Observable.from(items).pipe(consensus(2));
+    let cs = Observable.from(items).pipe(
+      consensus([createRequest({ id: '1' }), createRequest({ id: '2' })], 2)
+    );
     let expectErr: Error = new Error('');
 
     cs.subscribe({
@@ -104,18 +135,18 @@ describe('Consensus', () => {
   });
 
   it("can't reach consensus because of different payloads", async () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '1' }),
       createResponse({ id: '1', payload: '0x100002' }),
     ];
     return expect(
-      collect(Observable.from(items).pipe(consensus(3)))
+      collect(Observable.from(items).pipe(consensus([createRequest()], 3)))
     ).rejects.toThrowError();
   });
 
   it('the parallel consensus attempts', async () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '1', payload: '0x100002' }),
       createResponse({ id: '1', payload: '0x100002' }),
@@ -126,19 +157,21 @@ describe('Consensus', () => {
       createResponse({ id: '1', payload: '0x100002' }),
       createResponse({ id: '1', payload: '0x100002' }),
     ];
-    let result = await collect(Observable.from(items).pipe(consensus(9)));
+    let result = await collect(
+      Observable.from(items).pipe(consensus([createRequest()], 7))
+    );
     expect(result).toEqual(items.slice(1, 2));
   });
 
   it('handles unsubscribe correctly', () => {
-    const items: JSONRPCResponse[] = [
+    const items: ReplyItem[] = [
       createResponse({ id: '1' }),
       createResponse({ id: '2' }),
     ];
     let spy = jest.fn();
     let obs = new Observable(() => {
       return () => spy();
-    }).pipe(consensus(2));
+    }).pipe(consensus([createRequest()], 2));
     let sub = obs.subscribe({});
     unsubscribe(sub);
     expect(spy).toBeCalled();

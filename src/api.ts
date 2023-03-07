@@ -4,9 +4,9 @@ import type {
   ReplyItem,
   HTTPResponse,
   JSONRPCResponse,
-} from 'drpc-proxy';
+} from '@drpcorg/drpc-proxy';
 import { CheckerT, createCheckers } from 'ts-interface-checker';
-import suite from 'drpc-proxy/protocol-ti';
+import suite from '@drpcorg/drpc-proxy/protocol-ti';
 import { initNonce } from './utils';
 import {
   Observable,
@@ -17,11 +17,7 @@ import {
   Subscription,
 } from 'observable-fns';
 import nodefetch from 'node-fetch';
-import {
-  requestFinalization,
-  requestCompletness,
-  requestTimeout,
-} from './pipes/request';
+import { requestFinalization, requestTimeout } from './pipes/request';
 import { checkSignatures } from './pipes/signatures';
 import { consensus } from './pipes/consensus';
 import { collect, shuffleArray } from './utils';
@@ -48,11 +44,10 @@ export type RpcState = {
   nextId: number;
   timeout: number;
   nextReqId: number;
-  provider_ids: string[];
+  provider_ids?: string[];
   quorum_from: number;
   quorum_of: number;
   network: string;
-  api_key?: string;
   dkey?: string;
   dontShuffle: boolean;
   skipSignatureCheck: boolean;
@@ -64,16 +59,19 @@ export type RpcState = {
  */
 export type ProviderSettings = {
   url: string;
-  provider_ids: string[];
+  provider_ids?: string[];
   quorum_from?: number;
   quorum_of?: number;
   timeout?: number;
-  api_key?: string;
   dkey?: string;
   network?: string;
   dontShuffle?: boolean;
   skipSignatureCheck?: boolean;
   skipResponseDeepCheck?: boolean;
+};
+
+export type ProviderSettingsMaybeURL = Omit<ProviderSettings, 'url'> & {
+  url?: string;
 };
 
 /**
@@ -101,14 +99,23 @@ function createRequestItem(
 }
 
 function provider(settings: ProviderSettings): RpcState {
-  if (!settings.api_key && !settings.dkey) {
-    throw new Error('One of keys should be specified either api_key of dkey');
+  if (!settings.dkey) {
+    throw new Error('dkey should be specified');
   }
+
+  let quorum_from = settings.quorum_from || settings.quorum_of || 1;
+  let quorum_of = settings.quorum_of || settings.quorum_from || 1;
+
+  let isQuorumRateOkay = quorum_of > quorum_from / 2;
+
+  if (!isQuorumRateOkay) {
+    throw new Error('quorum_of should be more that quorum_from / 2');
+  }
+
   return {
-    api_key: settings.api_key,
     provider_ids: settings.provider_ids,
-    quorum_from: settings.quorum_from || settings.quorum_of || 1,
-    quorum_of: settings.quorum_of || settings.quorum_from || 1,
+    quorum_from,
+    quorum_of,
     nextId: initNonce(),
     nextNonce: initNonce(),
     nextReqId: initNonce(),
@@ -177,7 +184,6 @@ abstract class Api {
       provider_ids: this.state.provider_ids,
       quorum: this.state.quorum_from,
       rpc: preqs,
-      api_key: this.state.api_key,
       dkey: this.state.dkey,
       network: this.state.network,
     };
@@ -189,9 +195,8 @@ abstract class Api {
         this.state.skipSignatureCheck
           ? filter(() => true)
           : checkSignatures(request),
-        map((item) => item.result as JSONRPCResponse),
-        consensus(this.state.quorum_of),
-        requestCompletness(request)
+        consensus(request.rpc, this.state.quorum_of),
+        map((item) => item.result as JSONRPCResponse)
       )
     );
 
@@ -221,7 +226,22 @@ abstract class Api {
 /**
  * HTTP API provider
  */
+
+function withHTTPDefaultURL(
+  settings: Omit<ProviderSettings, 'url'> & { url?: string }
+): ProviderSettings {
+  if (!settings.url) {
+    settings.url = 'https://main.drpc.org';
+  }
+  return settings as ProviderSettings;
+}
+
 export class HTTPApi extends Api {
+  constructor(settings: ProviderSettingsMaybeURL) {
+    let enhanced = withHTTPDefaultURL(settings);
+    super(enhanced);
+  }
+
   private async execute(
     controller: AbortController,
     request: DrpcRequest
@@ -266,6 +286,14 @@ export class HTTPApi extends Api {
   }
 }
 
+function withWebsocketDefaultURL(
+  settings: Omit<ProviderSettings, 'url'> & { url?: string }
+): ProviderSettings {
+  if (!settings.url) {
+    settings.url = 'wss://main.drpc.org';
+  }
+  return settings as ProviderSettings;
+}
 export class WsApi extends Api {
   private readonly wsconn: WS.w3cwebsocket;
   private readonly outputStream: Subject<ReplyItem>;
@@ -274,10 +302,11 @@ export class WsApi extends Api {
   private readonly closing: Promise<void>;
 
   constructor(
-    settings: ProviderSettings,
+    settings: ProviderSettingsMaybeURL,
     client: typeof WS.w3cwebsocket | undefined = undefined
   ) {
-    super(settings);
+    let enhanced = withWebsocketDefaultURL(settings);
+    super(enhanced);
     this.outputStream = new Subject<ReplyItem>();
     this.inputStream = new Subject<DrpcRequest>();
     let Client = client || WS.w3cwebsocket;

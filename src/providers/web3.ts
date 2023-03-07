@@ -1,4 +1,4 @@
-import { JSONRpc, HTTPApi, WsApi, ProviderSettings } from '../api';
+import { JSONRpc, HTTPApi, WsApi, ProviderSettingsMaybeURL } from '../api';
 import type { AbstractProvider } from 'web3-core';
 
 abstract class DrpcProvider implements AbstractProvider {
@@ -48,7 +48,7 @@ export class HttpDrpcProvider extends DrpcProvider {
   protected id() {
     return this.api.id();
   }
-  constructor(settings: ProviderSettings) {
+  constructor(settings: ProviderSettingsMaybeURL) {
     super();
     this.api = new HTTPApi(settings);
   }
@@ -63,7 +63,7 @@ export class WsDrpcProvider extends DrpcProvider {
   protected id() {
     return this.api.id();
   }
-  constructor(settings: ProviderSettings) {
+  constructor(settings: ProviderSettingsMaybeURL) {
     super();
     this.api = new WsApi(settings);
   }

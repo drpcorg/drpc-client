@@ -1,12 +1,17 @@
 import {
-  requestCompletness,
   requestFinalization,
   requestTimeout,
 } from '../../../src/pipes/request';
-import { JSONRPCResponse, ReplyItem, Request as DrpcRequest } from 'drpc-proxy';
+import {
+  JSONRPCResponse,
+  ReplyItem,
+  Request as DrpcRequest,
+} from '@drpcorg/drpc-proxy';
 import { Observable, unsubscribe } from 'observable-fns';
 import { collect, failureKindToNumber } from '../../../src/utils';
-import { jest } from '@jest/globals';
+import { jest, expect, it as JestIt } from '@jest/globals';
+
+declare var it: typeof JestIt;
 
 const defaultReply: ReplyItem = {
   id: '450359962737049540',
@@ -38,8 +43,6 @@ const defaultRequest: DrpcRequest = {
       params: [],
     },
   ],
-  api_key:
-    'eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiJ0ZXN0aW5nIiwiZXhwIjoxNjYyODk4MDg0LCJqdGkiOiJ0ZXN0aW5nIiwiaWF0IjoxNjU0MjU4MDg0fQ.AHL7zUJ1SoBFoNFtT4wXnDTMExfJsJtzqZuGGrxB8By09uBoqPqisUuF2LF15k_fWsJ1zwo-308-WaybBkgpsGndALXFEvzxJ0-ZhSso7VHN0iF4qeWq1gbsCQKer_L9aDCUrnz2UR-xVeri0hqZ2-KheE861fIVKRsCMcvSsVuZeOEB',
   network: 'ethereum',
 };
 
@@ -83,6 +86,7 @@ describe('Request', () => {
     it('completes stream when all responses were seen', async () => {
       let request = createRequest({
         provider_ids: ['test1', 'test2'],
+        quorum: 2,
       });
       let data = [
         createReply({ provider_id: 'test1' }),
@@ -96,35 +100,10 @@ describe('Request', () => {
       expect(result).toEqual(data);
     });
 
-    it('filters out requests I do not asked for', async () => {
-      let request = createRequest({
-        provider_ids: ['test1', 'test2'],
-      });
-      let data = [
-        createReply({ provider_id: 'test1' }),
-        createReply({
-          provider_id: 'test1',
-          id: '3434',
-          result: {
-            ...(defaultReply.result as JSONRPCResponse),
-            id: '3434',
-          },
-        }),
-      ];
-      let spy = jest.fn();
-      let response = new Observable((obs) => {
-        data.forEach((item) => obs.next(item));
-      })
-        .pipe(requestFinalization(request))
-        .subscribe({ next: spy, complete: spy });
-      await timeout(50);
-      expect(spy).toBeCalledWith(createReply({ provider_id: 'test1' }));
-      expect(spy).toBeCalledTimes(1);
-    });
-
     it('handles partial failure', async () => {
       let request = createRequest({
         provider_ids: ['test1', 'test2'],
+        quorum: 2,
       });
       let data = [
         createReply({ provider_id: 'test1' }),
@@ -133,7 +112,7 @@ describe('Request', () => {
           error: {
             kind: failureKindToNumber('partial'),
             code: 0,
-            item_ids: [],
+            item_ids: ['450359962737049540'],
             message: 'test',
           },
         }),
@@ -143,7 +122,7 @@ describe('Request', () => {
           data.forEach((item) => obs.next(item));
         }).pipe(requestFinalization(request))
       );
-      expect(result).toEqual([createReply({ provider_id: 'test1' })]);
+      expect(result).toEqual(data);
     });
 
     it('handles total failure', async () => {
@@ -167,44 +146,6 @@ describe('Request', () => {
         }).pipe(requestFinalization(request))
       );
       expect(result).rejects.toMatchInlineSnapshot(`[Error: test]`);
-    });
-  });
-
-  describe('completness', () => {
-    it('handles unsubscription', () => {
-      let spy = jest.fn();
-      let sub = new Observable(() => {
-        return spy;
-      })
-        .pipe(requestCompletness(createRequest()))
-        .subscribe({});
-      unsubscribe(sub);
-      expect(spy).toHaveBeenCalled();
-    });
-
-    it('filters unexpected requests', async () => {
-      let results = await collect(
-        Observable.from([
-          { ...(createReply().result as JSONRPCResponse), id: '23232323' },
-          createReply().result as JSONRPCResponse,
-        ]).pipe(requestCompletness(createRequest()))
-      );
-      expect(results).toEqual(results);
-    });
-
-    it('walks happy path', async () => {
-      let results = await collect(
-        Observable.from([createReply().result as JSONRPCResponse]).pipe(
-          requestCompletness(createRequest())
-        )
-      );
-      expect(results).toEqual(results);
-    });
-
-    it("errors when haven't seen any data on some requests", async () => {
-      return expect(
-        collect(Observable.from([]).pipe(requestCompletness(createRequest())))
-      ).rejects.toThrowError(/Partial request results/);
     });
   });
 

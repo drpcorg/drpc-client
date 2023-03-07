@@ -1,5 +1,5 @@
 import { JsonRpcSigner, StaticJsonRpcProvider } from '@ethersproject/providers';
-import { ProviderSettings, HTTPApi } from '../api';
+import { HTTPApi, ProviderSettingsMaybeURL } from '../api';
 import { Logger } from '@ethersproject/logger';
 
 const logger = new Logger('drpc 0.1');
@@ -7,7 +7,7 @@ const logger = new Logger('drpc 0.1');
 export class DrpcProvider extends StaticJsonRpcProvider {
   readonly api: HTTPApi;
 
-  constructor(settings: ProviderSettings) {
+  constructor(settings: ProviderSettingsMaybeURL) {
     let api = new HTTPApi(settings);
     let network = api.state.network;
     let connection = { url: api.state.url };
