@@ -5,12 +5,12 @@ signatures for response data, validating data authenticity. Supports node and br
 
 ## Installation
 
-`npm install drpc-sdk`
+`npm install @drpcorg/drpc-sdk`
 
 ## Example
 
 ```js
-import { HTTPApi } from 'drpc-sdk';
+import { HTTPApi } from '@drpcorg/drpc-sdk';
 
 async function getBlockHeight() {
   let api = new HTTPApi({
@@ -66,9 +66,9 @@ non-browser code.
 If you're using `web3.js`, drpc-sdk exposes the provider
 
 ```js
-import { HttpDrpcProvider } from 'drpc-sdk/dist/esm/providers/web3';
+import { HttpDrpcProvider } from '@drpcorg/drpc-sdk/dist/esm/providers/web3';
 // for cjs
-// import { DrpcProvider } from 'drpc-sdk/dist/cjs/providers/web3';
+// import { DrpcProvider } from '@drpcorg/drpc-sdk/dist/cjs/providers/web3';
 
 async function getBlock(tag) {
   let state = provider({
@@ -90,9 +90,9 @@ async function getBlock(tag) {
 If you're using `ethers.js`, drpc-sdk exposes the provider
 
 ```js
-import { DrpcProvider } from 'drpc-sdk/dist/esm/providers/ethers';
+import { DrpcProvider } from '@drpcorg/drpc-sdk/dist/esm/providers/ethers';
 // for cjs
-// import { DrpcProvider } from 'drpc-sdk/dist/cjs/providers/ethers';
+// import { DrpcProvider } from '@drpcorg/drpc-sdk/dist/cjs/providers/ethers';
 
 async function getBlock(tag) {
   let state = provider({

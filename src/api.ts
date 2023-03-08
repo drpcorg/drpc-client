@@ -4,6 +4,7 @@ import type {
   ReplyItem,
   HTTPResponse,
   JSONRPCResponse,
+  Fallback,
 } from '@drpcorg/drpc-proxy';
 import { CheckerT, createCheckers } from 'ts-interface-checker';
 import suite from '@drpcorg/drpc-proxy/protocol-ti';
@@ -52,6 +53,8 @@ export type RpcState = {
   dontShuffle: boolean;
   skipSignatureCheck: boolean;
   skipResponseDeepCheck: boolean;
+  fallback?: Fallback;
+  client_type?: string;
 };
 
 /**
@@ -68,6 +71,8 @@ export type ProviderSettings = {
   dontShuffle?: boolean;
   skipSignatureCheck?: boolean;
   skipResponseDeepCheck?: boolean;
+  fallback?: Fallback;
+  client_type?: string;
 };
 
 export type ProviderSettingsMaybeURL = Omit<ProviderSettings, 'url'> & {
@@ -126,6 +131,8 @@ function provider(settings: ProviderSettings): RpcState {
     dontShuffle: !!settings.dontShuffle,
     skipSignatureCheck: !!settings.skipSignatureCheck,
     skipResponseDeepCheck: !!settings.skipResponseDeepCheck,
+    fallback: settings.fallback,
+    client_type: settings.client_type,
   };
 }
 
@@ -186,6 +193,8 @@ abstract class Api {
       rpc: preqs,
       dkey: this.state.dkey,
       network: this.state.network,
+      fallback: this.state.fallback,
+      client_type: this.state.client_type,
     };
 
     let items = await collect(
